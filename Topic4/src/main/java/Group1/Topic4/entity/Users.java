@@ -5,7 +5,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
-
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.Instant;
 @Getter
 @Setter
@@ -13,6 +14,7 @@ import java.time.Instant;
 @Table(name = "users")
 public class Users {
     @ColumnDefault("'STUDENT'")
+    @JdbcTypeCode(SqlTypes.OTHER)
     @Column(name = "system_role", columnDefinition = "user_role")
     private Object systemRole;
     @ColumnDefault("CURRENT_TIMESTAMP")
