@@ -2,6 +2,7 @@ package Group1.Topic4.Service;
 
 import Group1.Topic4.entity.Users;
 import Group1.Topic4.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -9,16 +10,17 @@ import java.time.Instant;
 @Service
 public class AuthService {
     private final UserRepository userRepository;
-
-    public AuthService(UserRepository userRepository) {
+    private final PasswordEncoder passwordEncoder;
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
     public boolean login(String email, String password){
         Users user = userRepository.findByEmail(email);
             if(user == null){
                 return false;
             }
-            return user.getPasswordHash().equals(password);
+            return passwordEncoder.matches(password, user.getPasswordHash());
 
     }
     public boolean register(String email, String password, String fullName, String studentID, String universityName){
@@ -29,7 +31,8 @@ public class AuthService {
         newUser.setEmail(email);
         newUser.setStudentId(studentID);
         newUser.setUniversityName(universityName);
-        newUser.setPasswordHash(password); // Lưu mật khẩu dưới dạng hash trong thực tế
+        String hashPass = passwordEncoder.encode(password);
+        newUser.setPasswordHash(hashPass); // Lưu mật khẩu dưới dạng hash trong thực tế
         newUser.setFullName(fullName);
         newUser.setSystemRole("STUDENT");
         newUser.setIsApproved(false);
