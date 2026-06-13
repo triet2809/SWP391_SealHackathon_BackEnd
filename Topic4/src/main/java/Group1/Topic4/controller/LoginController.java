@@ -3,6 +3,7 @@ package Group1.Topic4.controller;
 import Group1.Topic4.Service.AuthService;
 import Group1.Topic4.dto.LoginRequest;
 import Group1.Topic4.dto.LoginResponse;
+import Group1.Topic4.entity.Users;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,13 +21,32 @@ public class LoginController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
-        boolean success = authService.login(loginRequest.getEmail(), loginRequest.getPassword());
-        if(success){
-            return ResponseEntity.ok(new LoginResponse("Login successful"));
+        String token = authService.login(loginRequest.getEmail(), loginRequest.getPassword());
+        if (token != null) {
+
+            Users user =
+                    authService.findByEmail(
+                            loginRequest.getEmail()
+                    );
+
+            return ResponseEntity.ok(
+                    new LoginResponse(
+                            token,
+                            user.getSystemRole(),
+                            "Login successful"
+                    )
+            );
         }
 
-        // Logic đăng nhập sẽ được triển khai ở đây
-        return ResponseEntity.ok(new LoginResponse("Login failed"));
-    }
 
+        // Logic đăng nhập sẽ được triển khai ở đây
+        return ResponseEntity.ok(
+                new LoginResponse(
+                        null,
+                        null,
+                        "Login failed"
+                )
+        );
+
+    }
 }

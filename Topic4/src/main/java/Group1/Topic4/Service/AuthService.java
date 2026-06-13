@@ -1,5 +1,6 @@
 package Group1.Topic4.Service;
 
+import Group1.Topic4.config.JwtTokenProvider;
 import Group1.Topic4.entity.Users;
 import Group1.Topic4.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,16 +12,21 @@ import java.time.Instant;
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    private final JwtTokenProvider jwtTokenProvider;
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
-    public boolean login(String email, String password){
+    public String login(String email, String password){
         Users user = userRepository.findByEmail(email);
             if(user == null){
-                return false;
+                return null;
             }
-            return passwordEncoder.matches(password, user.getPasswordHash());
+        if(passwordEncoder.matches(password, user.getPasswordHash())){
+            return jwtTokenProvider.generateToken(user);
+        }
+        return null;
 
     }
     public boolean register(String email, String password, String fullName, String studentID, String universityName){
@@ -39,5 +45,8 @@ public class AuthService {
         newUser.setCreatedAt(Instant.now());
         userRepository.save(newUser);
         return true;
+    }
+    public Users findByEmail(String email){
+        return userRepository.findByEmail(email);
     }
 }
