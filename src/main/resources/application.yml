@@ -1,0 +1,24 @@
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: seal-hackathon-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/SEAL_HACKATHON
+    username: postgres
+    password: 12345
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: false
