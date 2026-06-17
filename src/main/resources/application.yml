@@ -7,11 +7,10 @@ spring:
     name: seal-hackathon-backend
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/SEAL_HACKATHON
+    url: jdbc:postgresql://localhost:5432/seal_hackathon
     username: postgres
     password: 12345
     driver-class-name: org.postgresql.Driver
-
   jpa:
     hibernate:
       ddl-auto: validate
