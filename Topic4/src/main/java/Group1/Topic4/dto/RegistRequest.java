@@ -13,6 +13,6 @@ public class RegistRequest {
     private String email;
     private String password;
     private String fullName;
-    private String universityName;
     private String studentId;
+    private String studentType;
 }

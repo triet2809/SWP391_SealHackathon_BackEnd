@@ -17,7 +17,11 @@ public class RegistrationController {
     }
     @PostMapping("/register")
     public ResponseEntity<RegistResponse> register(@RequestBody RegistRequest registRequest) {
-        boolean success = authService.register(registRequest.getEmail(), registRequest.getPassword(), registRequest.getFullName(),registRequest.getStudentId(), registRequest.getUniversityName());
+        boolean success = authService.register(registRequest.getEmail(),
+                registRequest.getPassword(),
+                registRequest.getFullName(),
+                registRequest.getStudentId(),
+                registRequest.getStudentType());
         if(success){
             return ResponseEntity.ok(new RegistResponse("Registration successful"));
         }

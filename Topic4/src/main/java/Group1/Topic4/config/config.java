@@ -17,7 +17,12 @@ public class config {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-        return http.build();
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/register",
+                                "/login/login"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                );      return http.build();
     }
 }

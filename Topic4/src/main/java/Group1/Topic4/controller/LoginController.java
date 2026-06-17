@@ -32,7 +32,7 @@ public class LoginController {
             return ResponseEntity.ok(
                     new LoginResponse(
                             token,
-                            user.getSystemRole(),
+                            user.getStudentType().toString().toUpperCase(),
                             "Login successful"
                     )
             );
