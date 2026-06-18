@@ -7,8 +7,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
 import java.time.Instant;
+import java.util.UUID;
 @Getter
 @Setter
 @Entity
@@ -21,13 +23,13 @@ public class Users {
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at")
     private Instant createdAt;
-    @ColumnDefault("false")
-    @Column(name = "is_approved")
-    private Boolean isApproved;
-    @Size(max = 255)
-    @ColumnDefault("'FPT University'")
-    @Column(name = "university_name")
-    private String universityName;
+    // @ColumnDefault("false")
+    // @Column(name = "is_approved")
+    // private Boolean isApproved;
+    // @Size(max = 255)
+    // @ColumnDefault("'FPT University'")
+    // @Column(name = "university_name")
+    // private String universityName;
     @Size(max = 50)
     @Column(name = "student_id", length = 50)
     private String studentId;
@@ -44,9 +46,10 @@ public class Users {
     @Column(name = "email", nullable = false)
     private String email;
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Integer id;
+    @GeneratedValue
+    @UuidGenerator
+    @Column(name = "id", nullable = false, updatable = false)
+    private UUID id;
 
 
 }

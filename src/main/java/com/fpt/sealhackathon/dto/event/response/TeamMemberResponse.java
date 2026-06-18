@@ -18,7 +18,7 @@ import lombok.Setter;
 public class TeamMemberResponse {
     private UUID id;
 
-    private Integer userId;
+    private UUID userId;
 
     private TeamMemberRole role;
 }
