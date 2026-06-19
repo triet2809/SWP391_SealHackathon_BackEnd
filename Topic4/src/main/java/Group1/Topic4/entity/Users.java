@@ -1,5 +1,6 @@
 package Group1.Topic4.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -29,6 +30,7 @@ public class Users {
 
     @Size(max = 255)
     @NotNull
+    @JsonIgnore
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
@@ -51,9 +53,9 @@ public class Users {
     @Column(name = "is_guest")
     private Boolean isGuest;
 
-    @JdbcTypeCode(SqlTypes.OTHER)
-    @Column(name = "status", columnDefinition = "account_status")
-    private Object status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private AccountStatus status;
 
     @Column(name = "created_at")
     private Instant createdAt;

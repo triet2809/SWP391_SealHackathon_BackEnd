@@ -20,7 +20,8 @@ public class config {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/register",
-                                "/login/login"
+                                "/login/login",
+                                "/approval/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 );      return http.build();

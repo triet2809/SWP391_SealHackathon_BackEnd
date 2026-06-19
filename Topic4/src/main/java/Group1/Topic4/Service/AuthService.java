@@ -1,12 +1,16 @@
 package Group1.Topic4.Service;
 
 import Group1.Topic4.config.JwtTokenProvider;
+import Group1.Topic4.entity.AccountStatus;
 import Group1.Topic4.entity.Users;
 import Group1.Topic4.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -49,7 +53,7 @@ public class AuthService {
 
         newUser.setIsGuest(false);
 
-        newUser.setStatus("pending");
+        newUser.setStatus(AccountStatus.pending);
 
         newUser.setCreatedAt(Instant.now());
         newUser.setUpdatedAt(Instant.now());
@@ -59,5 +63,42 @@ public class AuthService {
 
     public Users findByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+    public List<Users> getPendingUsers() {
+        return userRepository.findByStatus(AccountStatus.pending);
+    }
+    public boolean approveUser(UUID id) {
+
+        Optional<Users> userOpt =
+                userRepository.findById(id);
+
+        if(userOpt.isEmpty()) {
+            return false;
+        }
+
+        Users user = userOpt.get();
+
+        user.setStatus(AccountStatus.approved);
+
+        userRepository.save(user);
+
+        return true;
+    }
+    public boolean rejectUser(UUID id) {
+
+        Optional<Users> userOpt =
+                userRepository.findById(id);
+
+        if(userOpt.isEmpty()) {
+            return false;
+        }
+
+        Users user = userOpt.get();
+
+        user.setStatus(AccountStatus.rejected);
+
+        userRepository.save(user);
+
+        return true;
     }
 }
