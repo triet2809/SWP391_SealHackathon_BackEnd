@@ -330,3 +330,24 @@ Kỳ vọng:
 - Refresh token dùng để xin token mới.
 - Logout blacklist access token hiện tại.
 - `/auth/me` lấy current user từ `SecurityContext`.
+
+## Swagger Test Checklist
+
+Khi test bằng Swagger UI tại `http://localhost:8080/swagger-ui/index.html`, có thể đi theo checklist ngắn sau:
+
+1. Mở nhóm `Authentication` và xác nhận nhìn thấy đủ 6 endpoint:
+   - `POST /auth/register/fpt`
+   - `POST /auth/register/external`
+   - `POST /auth/login`
+   - `POST /auth/refresh-token`
+   - `POST /auth/logout`
+   - `GET /auth/me`
+2. Kiểm tra request schema của `register/fpt` có `campusId` và ví dụ dữ liệu.
+3. Kiểm tra request schema của `register/external` không yêu cầu `campusId`.
+4. Gọi `register/fpt` hoặc `register/external` với email mới và xác nhận nhận `201`.
+5. Gọi lại endpoint register với cùng email để xác nhận nhận `409 Conflict`.
+6. Gọi `login` và copy `accessToken`, `refreshToken` từ response.
+7. Dùng nút `Authorize` hoặc header Bearer trong Swagger để gọi `GET /auth/me`.
+8. Gọi `refresh-token` với `refreshToken` vừa nhận và xác nhận có token mới.
+9. Gọi `logout` với `accessToken` hiện tại và xác nhận nhận `200`.
+10. Gọi lại `GET /auth/me` bằng token đã logout để xác nhận bị `401 Unauthorized`.

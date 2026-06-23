@@ -11,6 +11,7 @@ import com.fpt.sealhackathon.entity.Role;
 import com.fpt.sealhackathon.entity.User;
 import com.fpt.sealhackathon.entity.enums.AccountStatus;
 import com.fpt.sealhackathon.entity.enums.StudentType;
+import com.fpt.sealhackathon.exception.DuplicateEmailException;
 import com.fpt.sealhackathon.exception.ResourceNotFoundException;
 import com.fpt.sealhackathon.exception.TokenInvalidException;
 import com.fpt.sealhackathon.exception.UnauthorizedException;
@@ -161,7 +162,7 @@ public class AuthServiceImpl implements AuthService {
             StudentType studentType
     ) {
         if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new DuplicateEmailException("Email already exists");
         }
 
         return User.builder()
