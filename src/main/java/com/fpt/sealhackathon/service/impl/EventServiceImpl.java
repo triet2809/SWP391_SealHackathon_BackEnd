@@ -32,10 +32,21 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventResponse createEvent(EventRequest request) {
+        validateSeasonUniqueness(request, null);
+        validateEventRules(request);
+
         Event event = Event.builder()
                 .title(request.getTitle())
+                .seasonName(request.getSeasonName())
+                .seasonYear(request.getSeasonYear())
                 .description(request.getDescription())
                 .status(normalizeStatus(request.getStatus()))
+                .registrationStartAt(request.getRegistrationStartAt())
+                .registrationEndAt(request.getRegistrationEndAt())
+                .registrationClosedAt(request.getRegistrationClosedAt())
+                .minTeamSize(request.getMinTeamSize())
+                .maxTeamSize(request.getMaxTeamSize())
+                .createdBy(request.getCreatedBy())
                 .build();
 
         Event savedEvent = eventRepository.save(event);
@@ -59,23 +70,29 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventResponse updateEvent(UUID id, EventRequest request) {
         Event event = findEventById(id);
+        validateSeasonUniqueness(request, id);
+        validateEventRules(request);
 
         event.setTitle(request.getTitle());
+        event.setSeasonName(request.getSeasonName());
+        event.setSeasonYear(request.getSeasonYear());
         event.setDescription(request.getDescription());
+        event.setRegistrationStartAt(request.getRegistrationStartAt());
+        event.setRegistrationEndAt(request.getRegistrationEndAt());
+        event.setRegistrationClosedAt(request.getRegistrationClosedAt());
+        event.setMinTeamSize(request.getMinTeamSize());
+        event.setMaxTeamSize(request.getMaxTeamSize());
+        event.setCreatedBy(request.getCreatedBy());
 
-        if (request.getStatus() != null && !request.getStatus().isBlank()) {
-            event.setStatus(normalizeStatus(request.getStatus()));
-        }
+        event.setStatus(normalizeStatus(request.getStatus()));
 
         Event updatedEvent = eventRepository.save(event);
         return mapToResponse(updatedEvent);
     }
 
     @Override
-    public void cancelEvent(UUID id) {
-        Event event = findEventById(id);
-        event.setStatus(EventStatus.cancelled);
-        eventRepository.save(event);
+    public void deleteEvent(UUID id) {
+        eventRepository.delete(findEventById(id));
     }
 
     private Event findEventById(UUID id) {
@@ -97,12 +114,52 @@ public class EventServiceImpl implements EventService {
         return EventStatus.valueOf(normalizedStatus);
     }
 
+    private void validateSeasonUniqueness(EventRequest request, UUID excludedId) {
+        if (request.getSeasonName() == null || request.getSeasonYear() == null) {
+            return;
+        }
+
+        boolean exists = excludedId == null
+                ? eventRepository.existsBySeasonNameAndSeasonYear(request.getSeasonName(), request.getSeasonYear())
+                : eventRepository.existsBySeasonNameAndSeasonYearAndIdNot(
+                request.getSeasonName(),
+                request.getSeasonYear(),
+                excludedId
+        );
+
+        if (exists) {
+            throw new IllegalArgumentException("Season name and season year combination already exists");
+        }
+    }
+
+    private void validateEventRules(EventRequest request) {
+        if (request.getRegistrationStartAt() != null
+                && request.getRegistrationEndAt() != null
+                && !request.getRegistrationStartAt().isBefore(request.getRegistrationEndAt())) {
+            throw new IllegalArgumentException("Registration start must be before registration end");
+        }
+
+        int minTeamSize = request.getMinTeamSize() == null ? 3 : request.getMinTeamSize();
+        int maxTeamSize = request.getMaxTeamSize() == null ? 5 : request.getMaxTeamSize();
+        if (maxTeamSize < minTeamSize) {
+            throw new IllegalArgumentException("Max team size must be greater than or equal to min team size");
+        }
+    }
+
     private EventResponse mapToResponse(Event event) {
         return EventResponse.builder()
                 .id(event.getId())
                 .title(event.getTitle())
+                .seasonName(event.getSeasonName())
+                .seasonYear(event.getSeasonYear())
                 .description(event.getDescription())
                 .status(event.getStatus().name())
+                .registrationStartAt(event.getRegistrationStartAt())
+                .registrationEndAt(event.getRegistrationEndAt())
+                .registrationClosedAt(event.getRegistrationClosedAt())
+                .minTeamSize(event.getMinTeamSize())
+                .maxTeamSize(event.getMaxTeamSize())
+                .createdBy(event.getCreatedBy())
                 .createdAt(event.getCreatedAt())
                 .updatedAt(event.getUpdatedAt())
                 .build();

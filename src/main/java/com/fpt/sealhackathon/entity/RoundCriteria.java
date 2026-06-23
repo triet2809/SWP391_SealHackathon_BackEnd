@@ -14,17 +14,18 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "round_tracks")
+@Table(name = "round_criteria")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Track {
+public class RoundCriteria {
 
     @Id
     @GeneratedValue
@@ -38,32 +39,20 @@ public class Track {
     @Column(name = "round_id", nullable = false)
     private UUID roundId;
 
+    @Column(name = "round_track_id")
+    private UUID roundTrackId;
+
+    @Column(name = "template_id")
+    private UUID templateId;
+
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "challenge_title")
-    private String challengeTitle;
+    @Column(name = "weight", nullable = false, precision = 10, scale = 2)
+    private BigDecimal weight;
 
-    @Column(name = "challenge_description", columnDefinition = "text")
-    private String challengeDescription;
-
-    @Column(name = "challenge_file_url", length = 500)
-    private String challengeFileUrl;
-
-    @Column(name = "max_teams")
-    private Integer maxTeams;
-
-    @Column(name = "top_n_to_promote", nullable = false)
-    private Integer topNToPromote;
-
-    @Column(name = "display_order", nullable = false)
-    private Integer displayOrder;
-
-    @Column(name = "is_final_shared_track", nullable = false)
-    private Boolean isFinalSharedTrack;
-
-    @Column(name = "created_by")
-    private UUID createdBy;
+    @Column(name = "description", columnDefinition = "text")
+    private String description;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -75,15 +64,6 @@ public class Track {
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-        if (this.topNToPromote == null) {
-            this.topNToPromote = 0;
-        }
-        if (this.displayOrder == null) {
-            this.displayOrder = 1;
-        }
-        if (this.isFinalSharedTrack == null) {
-            this.isFinalSharedTrack = false;
-        }
     }
 
     @PreUpdate

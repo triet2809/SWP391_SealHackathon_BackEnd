@@ -1,6 +1,5 @@
 package com.fpt.sealhackathon.dto.round;
 
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -22,11 +21,19 @@ public class RoundRequest {
     @Size(max = 255, message = "Round name must not exceed 255 characters")
     private String name;
 
+    private String description;
+
     @NotNull(message = "Sequence number is required")
     @Min(value = 1, message = "Sequence number must be greater than 0")
     private Integer sequenceNumber;
 
-    @NotNull(message = "Submission deadline is required")
-    @Future(message = "Submission deadline must be in the future")
+    private String status;
+
+    private LocalDateTime startAt;
+
     private LocalDateTime submissionDeadline;
+
+    private LocalDateTime scoringDeadline;
+
+    private UUID createdBy;
 }

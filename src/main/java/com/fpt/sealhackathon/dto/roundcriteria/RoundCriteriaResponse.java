@@ -1,25 +1,24 @@
-package com.fpt.sealhackathon.dto.round;
+package com.fpt.sealhackathon.dto.roundcriteria;
 
 import lombok.Builder;
 import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
 @Builder
-public class RoundResponse {
+public class RoundCriteriaResponse {
 
     private UUID id;
     private UUID eventId;
+    private UUID roundId;
+    private UUID roundTrackId;
+    private UUID templateId;
     private String name;
+    private BigDecimal weight;
     private String description;
-    private Integer sequenceNumber;
-    private LocalDateTime startAt;
-    private LocalDateTime submissionDeadline;
-    private LocalDateTime scoringDeadline;
-    private String status;
-    private UUID createdBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

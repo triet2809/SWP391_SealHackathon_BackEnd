@@ -45,11 +45,14 @@ public class Round {
     @Column(name = "start_at")
     private LocalDateTime startAt;
 
-    @Column(name = "submission_deadline", nullable = false)
+    @Column(name = "submission_deadline")
     private LocalDateTime submissionDeadline;
 
     @Column(name = "scoring_deadline")
     private LocalDateTime scoringDeadline;
+
+    @Column(name = "created_by")
+    private UUID createdBy;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

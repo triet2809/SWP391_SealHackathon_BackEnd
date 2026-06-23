@@ -1,20 +1,22 @@
 package com.fpt.sealhackathon.service;
 
-import com.fpt.sealhackathon.dto.track.TrackRequest;
-import com.fpt.sealhackathon.dto.track.TrackResponse;
+import com.fpt.sealhackathon.dto.roundtrack.RoundTrackRequest;
+import com.fpt.sealhackathon.dto.roundtrack.RoundTrackResponse;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface TrackService {
 
-    TrackResponse createTrack(TrackRequest request);
+    RoundTrackResponse createTrack(RoundTrackRequest request);
 
-    List<TrackResponse> getAllTracks();
+    List<RoundTrackResponse> getAllTracks();
 
-    TrackResponse getTrackById(UUID id);
+    RoundTrackResponse getTrackById(UUID id);
 
-    TrackResponse updateTrack(UUID id, TrackRequest request);
+    List<RoundTrackResponse> getTracksByRoundId(UUID roundId);
+
+    RoundTrackResponse updateTrack(UUID id, RoundTrackRequest request);
 
     void deleteTrack(UUID id);
 }

@@ -44,8 +44,8 @@ public class EventController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> cancelEvent(@PathVariable UUID id) {
-        eventService.cancelEvent(id);
+    public ResponseEntity<Void> deleteEvent(@PathVariable UUID id) {
+        eventService.deleteEvent(id);
         return ResponseEntity.noContent().build();
     }
 }

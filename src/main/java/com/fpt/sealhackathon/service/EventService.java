@@ -16,5 +16,5 @@ public interface EventService {
 
     EventResponse updateEvent(UUID id, EventRequest request);
 
-    void cancelEvent(UUID id);
+    void deleteEvent(UUID id);
 }

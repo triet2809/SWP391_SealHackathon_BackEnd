@@ -12,11 +12,7 @@ public interface RoundRepository extends JpaRepository<Round, UUID> {
 
     List<Round> findByEventIdOrderBySequenceNumberAsc(UUID eventId);
 
-    boolean existsByEventIdAndNameIgnoreCase(UUID eventId, String name);
-
     boolean existsByEventIdAndSequenceNumber(UUID eventId, Integer sequenceNumber);
-
-    boolean existsByEventIdAndNameIgnoreCaseAndIdNot(UUID eventId, String name, UUID id);
 
     boolean existsByEventIdAndSequenceNumberAndIdNot(UUID eventId, Integer sequenceNumber, UUID id);
 

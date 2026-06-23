@@ -28,6 +28,12 @@ public class Event {
     @Column(name = "title", nullable = false)
     private String title;
 
+    @Column(name = "season_name", length = 50)
+    private String seasonName;
+
+    @Column(name = "season_year")
+    private Integer seasonYear;
+
     @Column(name = "description", columnDefinition = "text")
     private String description;
 
@@ -35,6 +41,24 @@ public class Event {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private EventStatus status;
+
+    @Column(name = "registration_start_at")
+    private LocalDateTime registrationStartAt;
+
+    @Column(name = "registration_end_at")
+    private LocalDateTime registrationEndAt;
+
+    @Column(name = "registration_closed_at")
+    private LocalDateTime registrationClosedAt;
+
+    @Column(name = "min_team_size", nullable = false)
+    private Integer minTeamSize;
+
+    @Column(name = "max_team_size", nullable = false)
+    private Integer maxTeamSize;
+
+    @Column(name = "created_by")
+    private UUID createdBy;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -49,6 +73,12 @@ public class Event {
 
         if (this.status == null) {
             this.status = EventStatus.draft;
+        }
+        if (this.minTeamSize == null) {
+            this.minTeamSize = 3;
+        }
+        if (this.maxTeamSize == null) {
+            this.maxTeamSize = 5;
         }
     }
 
