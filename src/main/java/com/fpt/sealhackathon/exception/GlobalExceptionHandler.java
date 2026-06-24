@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Xử lý tập trung các ngoại lệ để trả về mã lỗi và thông điệp thống nhất cho API.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

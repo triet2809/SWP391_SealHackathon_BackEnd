@@ -25,6 +25,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Điều phối các API đăng ký, đăng nhập, làm mới token và lấy thông tin người dùng hiện tại.
+ */
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -50,7 +53,7 @@ public class AuthController {
 
     // Đăng ký tài khoản external student với cùng flow nhưng không yêu cầu campusId.
     @PostMapping("/register/external")
-    @Operation(summary = "Dang ky tai khoan External", description = "Tao tai khoan external student khong can campusId")
+    @Operation(summary = "Dang ky tai khoan sinh vien ngoai FPT", description = "Tao tai khoan sinh vien ngoai FPT khong can campusId")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Dang ky thanh cong"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Du lieu khong hop le", content = @Content),
@@ -108,9 +111,9 @@ public class AuthController {
 
     // /auth/me không đọc body hay path param; nó dựa hoàn toàn vào Authentication hiện tại.
     @GetMapping("/me")
-    @Operation(summary = "Lay thong tin current user", description = "Doc user hien tai tu Authentication da duoc JWT filter xac thuc")
+    @Operation(summary = "Lay thong tin nguoi dung hien tai", description = "Doc nguoi dung hien tai tu Authentication da duoc JWT filter xac thuc")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay current user thanh cong"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay nguoi dung hien tai thanh cong"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua dang nhap hoac token khong hop le", content = @Content)
     })
     public ResponseEntity<ApiResponse<MeResponse>> me(Authentication authentication) {

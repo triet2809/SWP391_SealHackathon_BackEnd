@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+/**
+ * Hiện thực các chức năng đọc danh sách role và gán hoặc gỡ role cho người dùng.
+ */
 @Service
 @RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {

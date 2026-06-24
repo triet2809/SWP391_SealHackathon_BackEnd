@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Cung cấp các API quản lý vai trò và gán vai trò cho người dùng.
+ */
 @RestController
 @RequestMapping("/api/roles")
 @RequiredArgsConstructor

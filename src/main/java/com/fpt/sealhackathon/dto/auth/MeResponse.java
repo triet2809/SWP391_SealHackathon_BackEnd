@@ -8,8 +8,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * DTO trả về thông tin chi tiết của người dùng hiện tại sau khi đã xác thực JWT.
+ */
 @Getter
 @Builder
+@Schema(description = "Thong tin chi tiet cua nguoi dung hien tai")
 public class MeResponse {
 
     @Schema(description = "ID cua user")

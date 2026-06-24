@@ -7,8 +7,12 @@ import lombok.Getter;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * DTO tóm tắt thông tin người dùng dùng chung cho các API xác thực và đăng ký.
+ */
 @Getter
 @Builder
+@Schema(description = "Thong tin tom tat cua nguoi dung tra ve sau cac API xac thuc")
 public class UserSummaryResponse {
 
     @Schema(description = "ID cua user")

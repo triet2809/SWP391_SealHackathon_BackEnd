@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+/**
+ * Hien thuc cac luong xac thuc JWT, dang ky tai khoan va truy van nguoi dung hien tai.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {

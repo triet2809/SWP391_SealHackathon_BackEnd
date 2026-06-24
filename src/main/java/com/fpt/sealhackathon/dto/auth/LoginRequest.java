@@ -6,8 +6,12 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO nhận thông tin đăng nhập bằng email và mật khẩu.
+ */
 @Getter
 @Setter
+@Schema(description = "Thong tin dang nhap bang email va mat khau")
 public class LoginRequest {
 
     @Schema(description = "Email dang nhap", example = "a@fpt.edu.vn")

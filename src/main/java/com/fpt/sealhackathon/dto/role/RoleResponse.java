@@ -6,6 +6,9 @@ import lombok.Getter;
 
 import java.util.UUID;
 
+/**
+ * DTO trả về thông tin vai trò dùng trong các API phân quyền.
+ */
 @Getter
 @Builder
 @Schema(description = "Thong tin role")

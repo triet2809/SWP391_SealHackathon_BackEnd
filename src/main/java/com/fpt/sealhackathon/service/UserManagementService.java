@@ -7,6 +7,9 @@ import org.springframework.security.core.Authentication;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Khai báo các chức năng quản trị người dùng, duyệt tài khoản và cập nhật trạng thái.
+ */
 public interface UserManagementService {
 
     List<UserManagementResponse> getUsers(String role, String status, String search);

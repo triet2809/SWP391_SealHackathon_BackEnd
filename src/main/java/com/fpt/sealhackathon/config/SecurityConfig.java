@@ -14,6 +14,9 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Cấu hình bảo mật tổng thể cho các endpoint xác thực và quản trị người dùng.
+ */
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {

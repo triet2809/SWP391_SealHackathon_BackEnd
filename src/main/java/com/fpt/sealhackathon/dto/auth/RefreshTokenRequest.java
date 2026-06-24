@@ -5,8 +5,12 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO nhận refresh token để xin cấp lại bộ token mới.
+ */
 @Getter
 @Setter
+@Schema(description = "Request lam moi token bang refresh token")
 public class RefreshTokenRequest {
 
     @Schema(description = "Refresh token duoc cap sau khi login", example = "eyJhbGciOiJIUzI1NiJ9...")

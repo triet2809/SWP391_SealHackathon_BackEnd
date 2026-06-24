@@ -8,6 +8,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * DTO trả về thông tin người dùng phục vụ các API quản trị và duyệt tài khoản.
+ */
 @Getter
 @Builder
 @Schema(description = "Thong tin user tra ve cho cac API quan tri")

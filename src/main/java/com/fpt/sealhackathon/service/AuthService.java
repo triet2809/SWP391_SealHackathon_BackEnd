@@ -9,6 +9,9 @@ import com.fpt.sealhackathon.dto.auth.RefreshTokenRequest;
 import com.fpt.sealhackathon.dto.auth.UserSummaryResponse;
 import org.springframework.security.core.Authentication;
 
+/**
+ * Khai báo các chức năng xác thực, đăng ký và truy xuất thông tin người dùng hiện tại.
+ */
 public interface AuthService {
 
     UserSummaryResponse registerFpt(FptRegisterRequest request);

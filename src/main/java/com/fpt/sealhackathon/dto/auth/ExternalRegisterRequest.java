@@ -7,8 +7,12 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO nhận dữ liệu đăng ký cho sinh viên ngoài FPT.
+ */
 @Getter
 @Setter
+@Schema(description = "Thong tin dang ky tai khoan sinh vien ngoai FPT")
 public class ExternalRegisterRequest {
 
     @Schema(description = "Ho va ten day du", example = "Tran Van B")

@@ -24,6 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Cung cấp các API quản trị danh sách người dùng, duyệt tài khoản và cập nhật trạng thái.
+ */
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -83,7 +86,7 @@ public class UserManagementController {
 
     // Approve route su dung Authentication de xac dinh coordinator thao tac va ghi audit log dung actor.
     @PatchMapping("/{userId:[0-9a-fA-F\\-]{36}}/approve")
-    @Operation(summary = "Approve user", description = "Duyet user va chuyen trang thai sang ACTIVE")
+    @Operation(summary = "Duyet nguoi dung", description = "Duyet user va chuyen trang thai sang ACTIVE")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Approve thanh cong"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Khong tim thay user", content = @Content)
@@ -100,7 +103,7 @@ public class UserManagementController {
 
     // Reject route giu cung pattern voi approve de frontend de su dung va backend de audit nhat quan.
     @PatchMapping("/{userId:[0-9a-fA-F\\-]{36}}/reject")
-    @Operation(summary = "Reject user", description = "Tu choi user va chuyen trang thai sang REJECTED")
+    @Operation(summary = "Tu choi nguoi dung", description = "Tu choi user va chuyen trang thai sang REJECTED")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Reject thanh cong"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Khong tim thay user", content = @Content)

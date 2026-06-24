@@ -4,8 +4,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
+/**
+ * DTO trả về cặp token và thông tin tóm tắt của người dùng sau đăng nhập hoặc làm mới token.
+ */
 @Getter
 @Builder
+@Schema(description = "Thong tin token va tong quan nguoi dung sau khi xac thuc thanh cong")
 public class AuthResponse {
 
     @Schema(description = "JWT access token de goi cac API protected")

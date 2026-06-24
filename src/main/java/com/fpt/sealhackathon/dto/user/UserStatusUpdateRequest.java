@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO nhận yêu cầu cập nhật trạng thái tài khoản người dùng từ màn hình quản trị.
+ */
 @Getter
 @Setter
 @Schema(description = "Request doi trang thai user")

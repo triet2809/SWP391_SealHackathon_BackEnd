@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+/**
+ * Hiện thực các chức năng quản trị người dùng, duyệt tài khoản và ghi nhận audit log.
+ */
 @Service
 @RequiredArgsConstructor
 public class UserManagementServiceImpl implements UserManagementService {

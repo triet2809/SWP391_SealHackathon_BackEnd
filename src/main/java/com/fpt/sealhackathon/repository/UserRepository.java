@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Repository truy cập dữ liệu người dùng kèm các truy vấn phục vụ xác thực và quản trị.
+ */
 public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificationExecutor<User> {
 
     @EntityGraph(attributePaths = "roles")

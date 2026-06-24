@@ -7,8 +7,12 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO nhận dữ liệu đăng ký cho sinh viên FPT có campusId bắt buộc.
+ */
 @Getter
 @Setter
+@Schema(description = "Thong tin dang ky tai khoan sinh vien FPT")
 public class FptRegisterRequest {
 
     @Schema(description = "Ho va ten day du", example = "Nguyen Van A")
