@@ -18,8 +18,10 @@ public class MeResponse {
     private String fullName;
     @Schema(description = "Email dang nhap")
     private String email;
-    @Schema(description = "Campus ID tra ve cho flow FPT")
+    @Schema(description = "Campus ID UUID tra ve cho flow FPT")
     private String campusId;
+    @Schema(description = "Ma sinh vien cua user neu co", example = "SE123456")
+    private String studentId;
     @Schema(description = "Loai sinh vien", example = "FPT")
     private String studentType;
     @Schema(description = "Trang thai hien thi ra API", example = "ACTIVE")

@@ -3,6 +3,7 @@ package com.fpt.sealhackathon.service.impl;
 import com.fpt.sealhackathon.dto.auth.AuthResponse;
 import com.fpt.sealhackathon.dto.auth.ExternalRegisterRequest;
 import com.fpt.sealhackathon.dto.auth.FptRegisterRequest;
+import com.fpt.sealhackathon.dto.auth.GuestJudgeRegisterRequest;
 import com.fpt.sealhackathon.dto.auth.LoginRequest;
 import com.fpt.sealhackathon.dto.auth.MeResponse;
 import com.fpt.sealhackathon.dto.auth.RefreshTokenRequest;
@@ -12,6 +13,7 @@ import com.fpt.sealhackathon.entity.User;
 import com.fpt.sealhackathon.entity.enums.AccountStatus;
 import com.fpt.sealhackathon.entity.enums.StudentType;
 import com.fpt.sealhackathon.exception.DuplicateEmailException;
+import com.fpt.sealhackathon.exception.ForbiddenException;
 import com.fpt.sealhackathon.exception.ResourceNotFoundException;
 import com.fpt.sealhackathon.exception.TokenInvalidException;
 import com.fpt.sealhackathon.exception.UnauthorizedException;
@@ -30,13 +32,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private static final String DEFAULT_ROLE = "ROLE_STUDENT";
+    private static final List<String> COORDINATOR_AUTHORITIES = List.of("coordinator", "COORDINATOR", "ROLE_COORDINATOR");
+    private static final List<String> JUDGE_ROLE_CANDIDATES = List.of("judge", "JUDGE", "ROLE_JUDGE");
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -49,15 +55,25 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public UserSummaryResponse registerFpt(FptRegisterRequest request) {
-        if (request.getCampusId() == null || request.getCampusId().isBlank()) {
+        if (request.getUniversityId() == null) {
+            throw new IllegalArgumentException("University ID is required for FPT registration");
+        }
+
+        if (request.getCampusId() == null) {
             throw new IllegalArgumentException("Campus ID is required for FPT registration");
+        }
+
+        if (request.getStudentId() == null || request.getStudentId().isBlank()) {
+            throw new IllegalArgumentException("Student ID is required for FPT registration");
         }
 
         User user = buildUser(
                 request.getFullName(),
                 request.getEmail(),
                 request.getPassword(),
+                request.getUniversityId(),
                 request.getCampusId(),
+                request.getStudentId(),
                 StudentType.fpt
         );
 
@@ -68,10 +84,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public UserSummaryResponse registerExternal(ExternalRegisterRequest request) {
+        if (request.getUniversityId() == null) {
+            throw new IllegalArgumentException("University ID is required for external registration");
+        }
+
         User user = buildUser(
                 request.getFullName(),
                 request.getEmail(),
                 request.getPassword(),
+                request.getUniversityId(),
+                null,
                 null,
                 StudentType.external
         );
@@ -80,6 +102,26 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // Login xác thực email/password rồi phát hành cặp access token và refresh token cho client.
+    @Override
+    @Transactional
+    public UserSummaryResponse createGuestJudge(GuestJudgeRegisterRequest request, Authentication authentication) {
+        validateCoordinatorAuthority(authentication);
+
+        User user = buildUser(
+                request.getFullName(),
+                request.getEmail(),
+                request.getPassword(),
+                null,
+                null,
+                null,
+                StudentType.none,
+                true,
+                getOrCreateRole(JUDGE_ROLE_CANDIDATES, "judge")
+        );
+
+        return buildUserSummary(userRepository.save(user));
+    }
+
     @Override
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
@@ -145,6 +187,7 @@ public class AuthServiceImpl implements AuthService {
                 .fullName(user.getFullName())
                 .email(user.getEmail())
                 .campusId(user.getCampusId())
+                .studentId(user.getStudentId())
                 .studentType(user.getStudentType().name().toUpperCase(Locale.ROOT))
                 .status(toApiStatus(user.getStatus()))
                 .roles(user.getRoles().stream().map(Role::getName).toList())
@@ -158,8 +201,34 @@ public class AuthServiceImpl implements AuthService {
             String fullName,
             String email,
             String rawPassword,
-            String campusId,
+            UUID universityId,
+            UUID campusId,
+            String studentId,
             StudentType studentType
+    ) {
+        return buildUser(
+                fullName,
+                email,
+                rawPassword,
+                universityId,
+                campusId,
+                studentId,
+                studentType,
+                false,
+                getOrCreateStudentRole()
+        );
+    }
+
+    private User buildUser(
+            String fullName,
+            String email,
+            String rawPassword,
+            UUID universityId,
+            UUID campusId,
+            String studentId,
+            StudentType studentType,
+            boolean isGuest,
+            Role role
     ) {
         if (userRepository.existsByEmail(email)) {
             throw new DuplicateEmailException("Email already exists");
@@ -169,18 +238,41 @@ public class AuthServiceImpl implements AuthService {
                 .fullName(fullName)
                 .email(email)
                 .password(passwordEncoder.encode(rawPassword))
-                .campusId(campusId)
+                .universityId(universityId)
+                .campusIdRef(campusId)
+                .studentId(studentId)
                 .studentType(studentType)
                 .status(AccountStatus.approved)
-                .isGuest(false)
-                .roles(Set.of(getOrCreateStudentRole()))
+                .isGuest(isGuest)
+                .roles(Set.of(role))
                 .build();
     }
 
     // Nếu role mặc định chưa có trong DB thì tự tạo để flow demo/test không bị phụ thuộc seed thủ công.
     private Role getOrCreateStudentRole() {
-        return roleRepository.findByName(DEFAULT_ROLE)
-                .orElseGet(() -> roleRepository.save(Role.builder().name(DEFAULT_ROLE).build()));
+        return getOrCreateRole(List.of(DEFAULT_ROLE), DEFAULT_ROLE);
+    }
+
+    private Role getOrCreateRole(List<String> candidates, String fallbackName) {
+        return candidates.stream()
+                .map(roleRepository::findByNameIgnoreCase)
+                .flatMap(Optional::stream)
+                .findFirst()
+                .orElseGet(() -> roleRepository.save(Role.builder().name(fallbackName).build()));
+    }
+
+    private void validateCoordinatorAuthority(Authentication authentication) {
+        if (authentication == null || authentication.getAuthorities() == null) {
+            throw new UnauthorizedException("User is not authenticated");
+        }
+
+        boolean isCoordinator = authentication.getAuthorities().stream()
+                .map(grantedAuthority -> grantedAuthority.getAuthority())
+                .anyMatch(COORDINATOR_AUTHORITIES::contains);
+
+        if (!isCoordinator) {
+            throw new ForbiddenException("User does not have coordinator permission");
+        }
     }
 
     // Tạo response login/refresh theo cùng một format để frontend xử lý thống nhất.
@@ -199,6 +291,7 @@ public class AuthServiceImpl implements AuthService {
                 .fullName(user.getFullName())
                 .email(user.getEmail())
                 .campusId(user.getCampusId())
+                .studentId(user.getStudentId())
                 .studentType(user.getStudentType().name().toUpperCase(Locale.ROOT))
                 .status(toApiStatus(user.getStatus()))
                 .roles(user.getRoles().stream().map(Role::getName).toList())

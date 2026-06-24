@@ -3,22 +3,19 @@ package com.fpt.sealhackathon.dto.auth;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.UUID;
-
 @Getter
 @Setter
-public class ExternalRegisterRequest {
+public class GuestJudgeRegisterRequest {
 
-    @Schema(description = "Ho va ten day du", example = "Tran Van B")
+    @Schema(description = "Ho va ten day du cua guest judge", example = "Nguyen Thi Judge")
     @NotBlank(message = "Full name is required")
     private String fullName;
 
-    @Schema(description = "Email dung de dang nhap", example = "b@gmail.com")
+    @Schema(description = "Email dung de dang nhap", example = "judge.guest@gmail.com")
     @Email(message = "Email is invalid")
     @NotBlank(message = "Email is required")
     private String email;
@@ -27,8 +24,4 @@ public class ExternalRegisterRequest {
     @NotBlank(message = "Password is required")
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
-
-    @Schema(description = "University ID cua external student", example = "11111111-1111-1111-1111-111111111111")
-    @NotNull(message = "University ID is required")
-    private UUID universityId;
 }

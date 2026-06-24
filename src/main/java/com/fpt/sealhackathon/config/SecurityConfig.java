@@ -3,6 +3,7 @@ package com.fpt.sealhackathon.config;
 import com.fpt.sealhackathon.security.CustomUserDetailsService;
 import com.fpt.sealhackathon.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -44,6 +45,8 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/guest-judges")
+                        .hasAnyAuthority("coordinator", "COORDINATOR", "ROLE_COORDINATOR")
                         .requestMatchers("/api/users/**", "/api/roles/**").hasAuthority("coordinator")
                         .requestMatchers("/auth/me", "/auth/logout").authenticated()
                         .anyRequest().permitAll()

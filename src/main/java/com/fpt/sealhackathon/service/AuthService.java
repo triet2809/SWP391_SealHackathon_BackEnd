@@ -3,6 +3,7 @@ package com.fpt.sealhackathon.service;
 import com.fpt.sealhackathon.dto.auth.AuthResponse;
 import com.fpt.sealhackathon.dto.auth.ExternalRegisterRequest;
 import com.fpt.sealhackathon.dto.auth.FptRegisterRequest;
+import com.fpt.sealhackathon.dto.auth.GuestJudgeRegisterRequest;
 import com.fpt.sealhackathon.dto.auth.LoginRequest;
 import com.fpt.sealhackathon.dto.auth.MeResponse;
 import com.fpt.sealhackathon.dto.auth.RefreshTokenRequest;
@@ -14,6 +15,8 @@ public interface AuthService {
     UserSummaryResponse registerFpt(FptRegisterRequest request);
 
     UserSummaryResponse registerExternal(ExternalRegisterRequest request);
+
+    UserSummaryResponse createGuestJudge(GuestJudgeRegisterRequest request, Authentication authentication);
 
     AuthResponse login(LoginRequest request);
 

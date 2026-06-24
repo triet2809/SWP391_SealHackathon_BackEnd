@@ -54,8 +54,14 @@ public class User {
     private String password;
 
     // API auth hiện dùng field campusId theo đề bài, nhưng schema hiện tại lưu mã này ở cột student_id.
+    @Column(name = "university_id")
+    private UUID universityId;
+
+    @Column(name = "campus_id")
+    private UUID campusIdRef;
+
     @Column(name = "student_id", length = 50)
-    private String campusId;
+    private String studentId;
 
     @Enumerated(EnumType.STRING)
     @JdbcType(PostgreSQLEnumJdbcType.class)
@@ -104,5 +110,13 @@ public class User {
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public String getCampusId() {
+        return this.campusIdRef == null ? null : this.campusIdRef.toString();
+    }
+
+    public void setCampusId(String campusId) {
+        this.campusIdRef = campusId == null || campusId.isBlank() ? null : UUID.fromString(campusId);
     }
 }

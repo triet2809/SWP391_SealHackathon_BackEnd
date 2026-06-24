@@ -3,6 +3,7 @@ package com.fpt.sealhackathon.controller;
 import com.fpt.sealhackathon.dto.auth.AuthResponse;
 import com.fpt.sealhackathon.dto.auth.ExternalRegisterRequest;
 import com.fpt.sealhackathon.dto.auth.FptRegisterRequest;
+import com.fpt.sealhackathon.dto.auth.GuestJudgeRegisterRequest;
 import com.fpt.sealhackathon.dto.auth.LoginRequest;
 import com.fpt.sealhackathon.dto.auth.MeResponse;
 import com.fpt.sealhackathon.dto.auth.RefreshTokenRequest;
@@ -64,6 +65,26 @@ public class AuthController {
     }
 
     // Login nhận email/password và trả về access token, refresh token cùng thông tin user.
+    @PostMapping("/guest-judges")
+    @Operation(summary = "Tao tai khoan guest judge", description = "Coordinator tao guest judge va tu dong gan role judge")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Tao guest judge thanh cong"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Du lieu khong hop le", content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Email da ton tai", content = @Content)
+    })
+    public ResponseEntity<ApiResponse<UserSummaryResponse>> createGuestJudge(
+            @Valid @RequestBody GuestJudgeRegisterRequest request,
+            Authentication authentication
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(
+                        "Create guest judge successfully",
+                        authService.createGuestJudge(request, authentication)
+                ));
+    }
+
     @PostMapping("/login")
     @Operation(summary = "Dang nhap", description = "Xac thuc email va mat khau de nhan access token va refresh token")
     @ApiResponses(value = {
