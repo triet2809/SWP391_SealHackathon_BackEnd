@@ -3,9 +3,9 @@ package com.fpt.sealhackathon.config;
 import com.fpt.sealhackathon.security.CustomUserDetailsService;
 import com.fpt.sealhackathon.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,12 +17,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @RequiredArgsConstructor
+// Cau hinh Spring Security cho cac endpoint cong khai, endpoint can JWT va cac bean auth lien quan.
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService customUserDetailsService;
 
-    // Cấu hình security ở mức tổng thể: public endpoint nào được mở, endpoint nào buộc phải có JWT.
+    // Cau hinh security o muc tong the: endpoint nao duoc mo va endpoint nao bat buoc phai co JWT.
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -56,13 +57,13 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // PasswordEncoder dùng BCrypt để password lưu trong DB luôn là hash thay vì plain text.
+    // PasswordEncoder dung BCrypt de password luu trong DB luon la hash thay vi plain text.
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Nối Spring Security với UserDetailsService tự viết để framework biết cách tải user từ DB.
+    // Noi Spring Security voi UserDetailsService tu viet de framework biet cach tai user tu DB.
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider =
@@ -71,7 +72,7 @@ public class SecurityConfig {
         return authenticationProvider;
     }
 
-    // Trả 401 rõ ràng khi client gọi endpoint protected mà không có JWT hợp lệ.
+    // Tra 401 ro rang khi client goi endpoint protected ma khong co JWT hop le.
     @Bean
     public AuthenticationEntryPoint unauthorizedEntryPoint() {
         return (request, response, authException) -> {

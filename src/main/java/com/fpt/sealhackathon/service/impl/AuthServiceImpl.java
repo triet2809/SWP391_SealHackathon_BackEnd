@@ -38,6 +38,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+// Service xu ly cac use case auth, register, refresh token va thong tin current user.
 public class AuthServiceImpl implements AuthService {
 
     private static final String DEFAULT_ROLE = "ROLE_STUDENT";
@@ -51,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
     private final CustomUserDetailsService customUserDetailsService;
     private final TokenBlacklistService tokenBlacklistService;
 
-    // Flow register FPT bắt buộc có campusId và luôn tạo user với role mặc định ROLE_STUDENT.
+    // Flow register FPT bat buoc co university, campus va studentId, sau do tao user voi role mac dinh.
     @Override
     @Transactional
     public UserSummaryResponse registerFpt(FptRegisterRequest request) {
@@ -80,7 +81,7 @@ public class AuthServiceImpl implements AuthService {
         return buildUserSummary(userRepository.save(user));
     }
 
-    // Flow register External dùng chung logic tạo user nhưng bỏ trống campusId.
+    // Flow register External dung chung logic tao user nhung bo trong campusId va studentId.
     @Override
     @Transactional
     public UserSummaryResponse registerExternal(ExternalRegisterRequest request) {
@@ -101,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
         return buildUserSummary(userRepository.save(user));
     }
 
-    // Login xác thực email/password rồi phát hành cặp access token và refresh token cho client.
+    // Flow guest judge duoc coordinator kich hoat truc tiep va gan role judge ngay khi tao tai khoan.
     @Override
     @Transactional
     public UserSummaryResponse createGuestJudge(GuestJudgeRegisterRequest request, Authentication authentication) {
@@ -139,7 +140,7 @@ public class AuthServiceImpl implements AuthService {
         return buildAuthResponse(user, userDetails);
     }
 
-    // Refresh token chỉ dùng để xin token mới, không cho phép thay access token ở API business.
+    // Refresh token chi dung de xin token moi, khong cho phep thay access token o API business.
     @Override
     public AuthResponse refreshToken(RefreshTokenRequest request) {
         String refreshToken = request.getRefreshToken();
@@ -156,7 +157,7 @@ public class AuthServiceImpl implements AuthService {
         return buildAuthResponse(user, userDetails);
     }
 
-    // Logout theo MVP sẽ blacklist access token hiện tại để các request sau bị chặn ngay.
+    // Logout theo MVP se blacklist access token hien tai de cac request sau bi chan ngay.
     @Override
     public void logout(String authorizationHeader) {
         String token = extractBearerToken(authorizationHeader);
@@ -170,7 +171,7 @@ public class AuthServiceImpl implements AuthService {
         tokenBlacklistService.blacklistToken(token);
     }
 
-    // /auth/me lấy email từ Authentication do JwtAuthenticationFilter đã gắn vào SecurityContext.
+    // /auth/me lay email tu Authentication do JwtAuthenticationFilter da gan vao SecurityContext.
     @Override
     public MeResponse getCurrentUser(Authentication authentication) {
         if (authentication == null || authentication.getName() == null) {
@@ -196,7 +197,7 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
-    // Gom phần validate duplicate, hash password và gán role để hai flow register không bị lặp code.
+    // Gom phan validate duplicate, hash password va gan role de cac flow register khong bi lap code.
     private User buildUser(
             String fullName,
             String email,
@@ -248,7 +249,7 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
-    // Nếu role mặc định chưa có trong DB thì tự tạo để flow demo/test không bị phụ thuộc seed thủ công.
+    // Neu role mac dinh chua co trong DB thi tu tao de flow demo/test khong bi phu thuoc seed thu cong.
     private Role getOrCreateStudentRole() {
         return getOrCreateRole(List.of(DEFAULT_ROLE), DEFAULT_ROLE);
     }
@@ -275,7 +276,7 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    // Tạo response login/refresh theo cùng một format để frontend xử lý thống nhất.
+    // Tao response login/refresh theo cung mot format de frontend xu ly thong nhat.
     private AuthResponse buildAuthResponse(User user, UserDetails userDetails) {
         return AuthResponse.builder()
                 .accessToken(jwtService.generateAccessToken(userDetails))

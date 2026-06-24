@@ -9,6 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
+// DTO nhan du lieu tao tai khoan guest judge do coordinator cung cap.
 public class GuestJudgeRegisterRequest {
 
     @Schema(description = "Ho va ten day du cua guest judge", example = "Nguyen Thi Judge")

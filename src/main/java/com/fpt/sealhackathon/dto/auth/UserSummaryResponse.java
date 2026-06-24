@@ -9,6 +9,7 @@ import java.util.UUID;
 
 @Getter
 @Builder
+// DTO tong hop thong tin user duoc tra ve trong cac flow auth.
 public class UserSummaryResponse {
 
     @Schema(description = "ID cua user")

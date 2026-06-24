@@ -12,6 +12,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
+// DTO nhan du lieu dang ky cho sinh vien FPT kem thong tin truong, campus va ma sinh vien.
 public class FptRegisterRequest {
 
     @Schema(description = "Ho va ten day du", example = "Nguyen Van A")

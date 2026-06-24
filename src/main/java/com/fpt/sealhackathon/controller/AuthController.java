@@ -30,11 +30,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 @Tag(name = "Authentication", description = "Cac API dang ky, dang nhap va xac thuc JWT")
+// Controller gom cac API xac thuc va dang ky tai khoan cho nhieu doi tuong nguoi dung.
 public class AuthController {
 
     private final AuthService authService;
 
-    // Đăng ký tài khoản sinh viên FPT; sau khi validate request sẽ tạo user và role mặc định.
+    // Dang ky tai khoan sinh vien FPT; sau khi validate request se tao user va role mac dinh.
     @PostMapping("/register/fpt")
     @Operation(summary = "Dang ky tai khoan FPT", description = "Tao tai khoan cho sinh vien FPT voi campusId bat buoc")
     @ApiResponses(value = {
@@ -49,7 +50,7 @@ public class AuthController {
                 .body(ApiResponse.success("Register FPT successfully", authService.registerFpt(request)));
     }
 
-    // Đăng ký tài khoản external student với cùng flow nhưng không yêu cầu campusId.
+    // Dang ky tai khoan external student voi cung flow nhung khong yeu cau campusId.
     @PostMapping("/register/external")
     @Operation(summary = "Dang ky tai khoan External", description = "Tao tai khoan external student khong can campusId")
     @ApiResponses(value = {
@@ -64,7 +65,7 @@ public class AuthController {
                 .body(ApiResponse.success("Register external successfully", authService.registerExternal(request)));
     }
 
-    // Login nhận email/password và trả về access token, refresh token cùng thông tin user.
+    // Coordinator tao guest judge truc tiep va nhan ve thong tin user da duoc gan role judge.
     @PostMapping("/guest-judges")
     @Operation(summary = "Tao tai khoan guest judge", description = "Coordinator tao guest judge va tu dong gan role judge")
     @ApiResponses(value = {
@@ -96,7 +97,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Login successfully", authService.login(request)));
     }
 
-    // Endpoint này dùng refresh token hợp lệ để xin cặp token mới mà không cần nhập lại mật khẩu.
+    // Endpoint nay dung refresh token hop le de xin cap token moi ma khong can nhap lai mat khau.
     @PostMapping("/refresh-token")
     @Operation(summary = "Lam moi token", description = "Dua vao refresh token hop le de cap lai bo token moi")
     @ApiResponses(value = {
@@ -113,7 +114,7 @@ public class AuthController {
         ));
     }
 
-    // Logout lấy access token từ header Authorization và đưa token đó vào blacklist.
+    // Logout lay access token tu header Authorization va dua token do vao blacklist.
     @PostMapping("/logout")
     @Operation(summary = "Dang xuat", description = "Vo hieu hoa access token hien tai bang blacklist trong bo nho")
     @ApiResponses(value = {
@@ -127,7 +128,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Logout successfully", null));
     }
 
-    // /auth/me không đọc body hay path param; nó dựa hoàn toàn vào Authentication hiện tại.
+    // /auth/me khong doc body hay path param; no dua hoan toan vao Authentication hien tai.
     @GetMapping("/me")
     @Operation(summary = "Lay thong tin current user", description = "Doc user hien tai tu Authentication da duoc JWT filter xac thuc")
     @ApiResponses(value = {

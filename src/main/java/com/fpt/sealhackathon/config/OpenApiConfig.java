@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+// Cau hinh OpenAPI trung tam de Swagger UI hien nut Authorize va scheme Bearer JWT.
 public class OpenApiConfig {
 
     private static final String BEARER_AUTH_SCHEME = "bearerAuth";

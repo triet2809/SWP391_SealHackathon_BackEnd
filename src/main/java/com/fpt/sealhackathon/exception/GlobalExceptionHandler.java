@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+// Bo xu ly exception tap trung de tra ve response loi nhat quan cho REST API.
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)

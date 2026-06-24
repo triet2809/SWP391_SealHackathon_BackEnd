@@ -10,6 +10,7 @@ import java.util.UUID;
 
 @Getter
 @Builder
+// DTO tra ve thong tin day du cua nguoi dung dang dang nhap.
 public class MeResponse {
 
     @Schema(description = "ID cua user")

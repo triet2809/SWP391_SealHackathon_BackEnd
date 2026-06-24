@@ -12,6 +12,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
+// DTO nhan du lieu dang ky cho external student.
 public class ExternalRegisterRequest {
 
     @Schema(description = "Ho va ten day du", example = "Tran Van B")

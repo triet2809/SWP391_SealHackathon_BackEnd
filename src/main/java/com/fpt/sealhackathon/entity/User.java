@@ -36,6 +36,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+// Entity anh xa bang users, luu thong tin tai khoan va danh sach role cua user.
 public class User {
 
     @Id
@@ -53,7 +54,7 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String password;
 
-    // API auth hiện dùng field campusId theo đề bài, nhưng schema hiện tại lưu mã này ở cột student_id.
+    // Schema tach rieng university_id, campus_id va student_id de dap ung rule rang buoc theo student_type.
     @Column(name = "university_id")
     private UUID universityId;
 
@@ -112,10 +113,12 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
+    // Getter compat giu nguyen contract response cu: campusId tra ve dang String duoc convert tu UUID.
     public String getCampusId() {
         return this.campusIdRef == null ? null : this.campusIdRef.toString();
     }
 
+    // Setter compat duoc giu lai cho cac diem goi cu, map String campusId ve truong UUID campus_id.
     public void setCampusId(String campusId) {
         this.campusIdRef = campusId == null || campusId.isBlank() ? null : UUID.fromString(campusId);
     }
