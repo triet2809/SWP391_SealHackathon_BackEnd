@@ -7,9 +7,9 @@ spring:
     name: seal-hackathon-backend
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/SEAL_HACKATHON
+    url: jdbc:postgresql://localhost:5432/SEAL_HACKATHON?stringtype=unspecified
     username: postgres
-    password: 12345
+    password: 123456
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -22,3 +22,8 @@ spring:
 
   flyway:
     enabled: false
+
+  security:
+    user:
+      name: ec.seal@fpt.edu.vn
+      password: test123
