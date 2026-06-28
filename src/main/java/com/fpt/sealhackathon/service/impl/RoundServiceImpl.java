@@ -1,0 +1,83 @@
+package com.fpt.sealhackathon.service.impl;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.apache.coyote.BadRequestException;
+import org.springframework.stereotype.Service;
+
+import com.fpt.sealhackathon.dto.round.RoundRequest;
+import com.fpt.sealhackathon.dto.round.RoundResponse;
+import com.fpt.sealhackathon.entity.Event;
+import com.fpt.sealhackathon.entity.Round;
+import com.fpt.sealhackathon.entity.enums.RoundStatus;
+import com.fpt.sealhackathon.exception.ConflictException;
+import com.fpt.sealhackathon.exception.ResourceNotFoundException;
+import com.fpt.sealhackathon.mapper.RoundMapper;
+import com.fpt.sealhackathon.repository.EventRepository;
+import com.fpt.sealhackathon.repository.RoundRepository;
+import com.fpt.sealhackathon.service.RoundService;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class RoundServiceImpl implements RoundService {
+
+    private final RoundRepository roundRepository;
+    private final EventRepository eventRepository;
+    private final RoundMapper roundMapper;
+
+    @Override
+    public RoundResponse create(RoundRequest request) {
+
+        Event event = eventRepository.findById(request.getEventId())
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
+
+        Round round = roundMapper.toEntity(request);
+        round.setEvent(event);
+
+        return roundMapper.toResponse(roundRepository.save(round));
+    }
+
+    @Override
+    public RoundResponse update(UUID id, RoundRequest request) {
+
+        Round round = roundRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Round not found"));
+
+        Event event = eventRepository.findById(request.getEventId())
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
+
+        if (!round.getEvent().getId().equals(request.getEventId())) {
+            // rule này do database dump đặt ra
+            throw new ConflictException("Cannot change event of an existing round");
+        }
+
+        roundMapper.updateEntityFromRequest(request, round);
+        round.setEvent(event);
+
+        return roundMapper.toResponse(roundRepository.save(round));
+    }
+
+    @Override
+    public List<RoundResponse> roundFilter(UUID eventId, String keyword) {
+
+        List<Round> rounds = roundRepository.roundFilter(eventId, keyword);
+
+        return roundMapper.toResponseList(rounds);
+    }
+
+    @Override
+    public RoundResponse changeStatus(UUID id, RoundStatus status) {
+
+        Round round = roundRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Round not found"));
+
+        round.setStatus(status);
+
+        return roundMapper.toResponse(roundRepository.save(round));
+    }
+}

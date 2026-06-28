@@ -8,8 +8,9 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
 
-import com.fpt.sealhackathon.entity.enums.EventStatus;
+import com.fpt.sealhackathon.entity.enums.RoundStatus;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,6 +18,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -28,13 +31,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "events")
+@Table(name = "rounds")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Event {
+public class Round {
 
     @Id
     @GeneratedValue
@@ -42,43 +45,36 @@ public class Event {
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(nullable = false, length = 255)
-    private String title;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "event_id", nullable = false)
+    private Event event;
 
-    @Column(name = "season_name", length = 50)
-    private String seasonName;
-
-    @Column(name = "season_year")
-    private Integer seasonYear;
+    @Column(nullable = false)
+    private String name;
 
     @Column(columnDefinition = "text")
     private String description;
 
+    @Column(name = "sequence_number", nullable = false)
+    private Integer sequenceNumber;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(nullable = false, columnDefinition = "event_status")
-    private EventStatus status;
+    @Column(nullable = false)
+    private RoundStatus status;
 
-    @Column(name = "registration_start_at")
-    private LocalDateTime registrationStartAt;
+    @Column(name = "start_at")
+    private LocalDateTime startAt;
 
-    @Column(name = "registration_end_at")
-    private LocalDateTime registrationEndAt;
+    @Column(name = "submission_deadline")
+    private LocalDateTime submissionDeadline;
 
-    @Column(name = "registration_closed_at")
-    private LocalDateTime registrationClosedAt;
+    @Column(name = "scoring_deadline")
+    private LocalDateTime scoringDeadline;
 
-    @Column(name = "min_team_size", nullable = false)
-    private Integer minTeamSize = 3;
-
-    @Column(name = "max_team_size", nullable = false)
-    private Integer maxTeamSize = 5;
-
-    @Column(name = "created_by")
-    private UUID createdBy;
-
-    @OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
-    private List<Round> rounds;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User createdBy;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -86,12 +82,12 @@ public class Event {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @OneToMany(mappedBy = "round", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RoundTrack> tracks;
+
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
-        if (status == null) {
-            status = EventStatus.draft;
-        }
     }
 
     @PreUpdate

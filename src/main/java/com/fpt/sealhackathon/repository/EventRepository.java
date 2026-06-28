@@ -28,4 +28,13 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
     List<Event> eventFilter(
             @Param("keyword") String keyword,
             @Param("seasonYear") Integer seasonYear);
+
+    boolean existsBySeasonNameAndSeasonYear(
+            String seasonName,
+            Integer seasonYear);
+
+    boolean existsBySeasonNameAndSeasonYearAndIdNot(
+            String seasonName,
+            Integer seasonYear,
+            UUID id);
 }

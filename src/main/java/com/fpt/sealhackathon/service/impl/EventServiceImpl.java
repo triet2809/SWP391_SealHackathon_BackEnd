@@ -1,12 +1,15 @@
 package com.fpt.sealhackathon.service.impl;
 
 import lombok.RequiredArgsConstructor;
+
+import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import com.fpt.sealhackathon.dto.event.EventRequest;
 import com.fpt.sealhackathon.dto.event.EventResponse;
 import com.fpt.sealhackathon.entity.Event;
 import com.fpt.sealhackathon.entity.enums.EventStatus;
+import com.fpt.sealhackathon.exception.ConflictException;
 import com.fpt.sealhackathon.exception.ResourceNotFoundException;
 import com.fpt.sealhackathon.mapper.EventMapper;
 import com.fpt.sealhackathon.repository.EventRepository;
@@ -26,6 +29,16 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventResponse create(EventRequest request) {
 
+        if (eventRepository.existsBySeasonNameAndSeasonYear(
+                request.getSeasonName(),
+                request.getSeasonYear())) {
+
+            throw new ConflictException(
+                    "Season '" + request.getSeasonName()
+                            + "' of year " + request.getSeasonYear()
+                            + " already exists");
+        }
+
         Event event = eventMapper.toEntity(request);
 
         return eventMapper.toResponse(eventRepository.save(event));
@@ -36,6 +49,17 @@ public class EventServiceImpl implements EventService {
 
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
+
+        if (eventRepository.existsBySeasonNameAndSeasonYearAndIdNot(
+                request.getSeasonName(),
+                request.getSeasonYear(),
+                id)) {
+
+            throw new ConflictException(
+                    "Season '" + request.getSeasonName()
+                            + "' of year " + request.getSeasonYear()
+                            + " already exists");
+        }
 
         eventMapper.updateEntity(request, event);
 
