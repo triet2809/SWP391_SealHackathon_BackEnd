@@ -5,6 +5,7 @@ import com.fpt.sealhackathon.entity.Team;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -89,4 +90,31 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
      * Lightweight existence check by event and profile.
      */
     boolean existsByEvent_IdAndTeamProfile_Id(UUID eventId, UUID teamProfileId);
+
+    /*
+     * Coordinator lock. Native UPDATE because locked_at/locked_reason are
+     * trigger-managed and mapped read-only on the entity.
+     * clearAutomatically refreshes the persistence context after the write.
+     */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(value = """
+            UPDATE teams
+            SET locked_at = NOW(),
+                locked_reason = :reason
+            WHERE id = :teamId
+            """, nativeQuery = true)
+    void lockTeam(@Param("teamId") UUID teamId, @Param("reason") String reason);
+
+    /*
+     * Coordinator disqualify. Native UPDATE because status is trigger-managed
+     * and mapped read-only on the entity.
+     */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(value = """
+            UPDATE teams
+            SET status = CAST('disqualified' AS team_status),
+                disqualified_reason = :reason
+            WHERE id = :teamId
+            """, nativeQuery = true)
+    void disqualifyTeam(@Param("teamId") UUID teamId, @Param("reason") String reason);
 }

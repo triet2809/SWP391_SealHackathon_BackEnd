@@ -3,7 +3,9 @@ package com.fpt.sealhackathon.controller;
 import com.fpt.sealhackathon.dto.enums.TeamMemberStatus;
 import com.fpt.sealhackathon.dto.request.ChangeRoleRequest;
 import com.fpt.sealhackathon.dto.request.CreateTeamRequest;
+import com.fpt.sealhackathon.dto.request.DisqualifyTeamRequest;
 import com.fpt.sealhackathon.dto.request.InviteMemberRequest;
+import com.fpt.sealhackathon.dto.request.LockTeamRequest;
 import com.fpt.sealhackathon.dto.request.TeamListRequest;
 import com.fpt.sealhackathon.dto.request.UpdateTeamRequest;
 import com.fpt.sealhackathon.dto.response.PagedResponse;
@@ -121,6 +123,38 @@ public class TeamController {
         UUID callerId = SecurityUtils.getCallerId();
         teamService.deleteTeam(teamId, callerId);
         return ResponseEntity.noContent().build();
+    }
+
+    // -------------------------------------------------------------------------
+    // PATCH /teams/{teamId}/lock
+    // -------------------------------------------------------------------------
+
+    /**
+     * Locks a team so no further member changes are allowed. Coordinator only.
+     */
+    @PatchMapping("/teams/{teamId}/lock")
+    public ResponseEntity<TeamDetailResponse> lockTeam(
+            @PathVariable UUID teamId,
+            @Valid @RequestBody(required = false) LockTeamRequest request) {
+
+        UUID callerId = SecurityUtils.getCallerId();
+        return ResponseEntity.ok(teamService.lockTeam(teamId, callerId, request));
+    }
+
+    // -------------------------------------------------------------------------
+    // PATCH /teams/{teamId}/disqualify
+    // -------------------------------------------------------------------------
+
+    /**
+     * Disqualifies a team (terminal state). Coordinator only.
+     */
+    @PatchMapping("/teams/{teamId}/disqualify")
+    public ResponseEntity<TeamDetailResponse> disqualifyTeam(
+            @PathVariable UUID teamId,
+            @Valid @RequestBody DisqualifyTeamRequest request) {
+
+        UUID callerId = SecurityUtils.getCallerId();
+        return ResponseEntity.ok(teamService.disqualifyTeam(teamId, callerId, request));
     }
 
     // -------------------------------------------------------------------------

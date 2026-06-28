@@ -1,17 +1,21 @@
 package com.fpt.sealhackathon.service;
 
+import com.fpt.sealhackathon.dto.enums.AuditAction;
 import com.fpt.sealhackathon.dto.enums.TeamMemberRole;
 import com.fpt.sealhackathon.dto.enums.TeamMemberStatus;
 import com.fpt.sealhackathon.dto.enums.TeamStatus;
 import com.fpt.sealhackathon.dto.request.ChangeRoleRequest;
 import com.fpt.sealhackathon.dto.request.CreateTeamRequest;
+import com.fpt.sealhackathon.dto.request.DisqualifyTeamRequest;
 import com.fpt.sealhackathon.dto.request.InviteMemberRequest;
+import com.fpt.sealhackathon.dto.request.LockTeamRequest;
 import com.fpt.sealhackathon.dto.request.TeamListRequest;
 import com.fpt.sealhackathon.dto.request.UpdateTeamRequest;
 import com.fpt.sealhackathon.dto.response.PagedResponse;
 import com.fpt.sealhackathon.dto.response.TeamDetailResponse;
 import com.fpt.sealhackathon.dto.response.TeamMemberResponse;
 import com.fpt.sealhackathon.dto.response.TeamSummaryResponse;
+import com.fpt.sealhackathon.entity.AuditLog;
 import com.fpt.sealhackathon.entity.Event;
 import com.fpt.sealhackathon.entity.Team;
 import com.fpt.sealhackathon.entity.TeamMember;
@@ -20,8 +24,10 @@ import com.fpt.sealhackathon.entity.User;
 import com.fpt.sealhackathon.exception.BusinessException;
 import com.fpt.sealhackathon.exception.ErrorCode;
 import com.fpt.sealhackathon.mapper.TeamMapper;
+import com.fpt.sealhackathon.repository.AuditLogRepository;
 import com.fpt.sealhackathon.repository.TeamMemberRepository;
 import com.fpt.sealhackathon.repository.TeamRepository;
+import com.fpt.sealhackathon.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -37,8 +43,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TeamService {
 
+    private static final String ROLE_COORDINATOR = "coordinator";
+    private static final String TARGET_TYPE_TEAM = "team";
+
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
+    private final UserRepository userRepository;
+    private final AuditLogRepository auditLogRepository;
     private final TeamMapper teamMapper;
     private final EntityManager entityManager;
 
@@ -534,6 +545,72 @@ public class TeamService {
         return teamMapper.toMemberResponse(saved);
     }
 
+    // -------------------------------------------------------------------------
+    // PATCH /teams/{teamId}/lock
+    // -------------------------------------------------------------------------
+
+    /** Locks a team so no further member changes are allowed. Coordinator only. */
+    @Transactional
+    public TeamDetailResponse lockTeam(UUID teamId, UUID callerId, LockTeamRequest request) {
+
+        // Step 1: Validate team exists
+        Team team = findTeamOrThrow(teamId);
+
+        // Step 2: Validate caller is a coordinator
+        validateIsCoordinator(callerId);
+
+        // Step 3: Cannot lock a terminated team
+        validateNotTerminated(team);
+
+        // Step 4: Reject if already locked
+        if (team.isLocked()) {
+            throw new BusinessException(ErrorCode.TEAM_ALREADY_LOCKED);
+        }
+
+        UUID eventId = team.getEvent().getId();
+        String reason = (request != null && request.getReason() != null)
+                ? request.getReason()
+                : "Locked by coordinator";
+
+        // Step 5: Apply lock via native update (locked_at/reason are read-only on the entity)
+        teamRepository.lockTeam(teamId, reason);
+
+        // Step 6: Audit
+        writeTeamAudit(callerId, eventId, teamId, AuditAction.LOCK_TEAM, reason);
+
+        // Step 7: Return refreshed detail
+        return getTeam(teamId);
+    }
+
+    // -------------------------------------------------------------------------
+    // PATCH /teams/{teamId}/disqualify
+    // -------------------------------------------------------------------------
+
+    /** Disqualifies a team (terminal state). Coordinator only. */
+    @Transactional
+    public TeamDetailResponse disqualifyTeam(UUID teamId, UUID callerId, DisqualifyTeamRequest request) {
+
+        // Step 1: Validate team exists
+        Team team = findTeamOrThrow(teamId);
+
+        // Step 2: Validate caller is a coordinator
+        validateIsCoordinator(callerId);
+
+        // Step 3: Cannot disqualify an already terminated team
+        validateNotTerminated(team);
+
+        UUID eventId = team.getEvent().getId();
+
+        // Step 4: Apply disqualify via native update (status is read-only on the entity)
+        teamRepository.disqualifyTeam(teamId, request.getReason());
+
+        // Step 5: Audit
+        writeTeamAudit(callerId, eventId, teamId, AuditAction.DISQUALIFY_TEAM, request.getReason());
+
+        // Step 6: Return refreshed detail
+        return getTeam(teamId);
+    }
+
     // =========================================================================
     // Private Helpers
     // =========================================================================
@@ -579,6 +656,32 @@ public class TeamService {
         if (!leader.getUser().getId().equals(callerId)) {
             throw new BusinessException(ErrorCode.FORBIDDEN_NOT_LEADER);
         }
+    }
+
+    /*
+     * Validate caller holds the coordinator role.
+     */
+    private void validateIsCoordinator(UUID callerId) {
+        if (!userRepository.hasRole(callerId, ROLE_COORDINATOR)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_NOT_COORDINATOR);
+        }
+    }
+
+    /*
+     * Write an audit_logs row for a team action.
+     */
+    private void writeTeamAudit(UUID callerId, UUID eventId, UUID teamId,
+                                AuditAction action, String details) {
+        AuditLog log = AuditLog.builder()
+                .userId(callerId)
+                .eventId(eventId)
+                .teamId(teamId)
+                .action(action)
+                .targetType(TARGET_TYPE_TEAM)
+                .targetId(teamId)
+                .details(details)
+                .build();
+        auditLogRepository.save(log);
     }
 
     /*
