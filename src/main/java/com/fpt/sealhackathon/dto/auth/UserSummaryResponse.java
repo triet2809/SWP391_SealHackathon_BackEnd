@@ -17,8 +17,12 @@ public class UserSummaryResponse {
     private String fullName;
     @Schema(description = "Email dang nhap")
     private String email;
-    @Schema(description = "Campus ID tra ve cho flow FPT")
-    private String campusId;
+    @Schema(description = "Ma sinh vien")
+    private String studentId;
+    @Schema(description = "ID truong dai hoc")
+    private UUID universityId;
+    @Schema(description = "ID campus")
+    private UUID campusId;
     @Schema(description = "Loai sinh vien", example = "FPT")
     private String studentType;
     @Schema(description = "Trang thai hien thi ra API", example = "ACTIVE")

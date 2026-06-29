@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -49,16 +50,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public UserSummaryResponse registerFpt(FptRegisterRequest request) {
-        if (request.getCampusId() == null || request.getCampusId().isBlank()) {
-            throw new IllegalArgumentException("Campus ID is required for FPT registration");
-        }
-
         User user = buildUser(
                 request.getFullName(),
                 request.getEmail(),
                 request.getPassword(),
-                request.getCampusId(),
-                StudentType.fpt
+                StudentType.fpt,
+                request.getStudentId(),
+                request.getUniversityId(),
+                request.getCampusId()
         );
 
         return buildUserSummary(userRepository.save(user));
@@ -72,8 +71,10 @@ public class AuthServiceImpl implements AuthService {
                 request.getFullName(),
                 request.getEmail(),
                 request.getPassword(),
+                StudentType.external,
                 null,
-                StudentType.external
+                request.getUniversityId(),
+                null
         );
 
         return buildUserSummary(userRepository.save(user));
@@ -144,7 +145,9 @@ public class AuthServiceImpl implements AuthService {
                 .id(user.getId())
                 .fullName(user.getFullName())
                 .email(user.getEmail())
-                .campusId(user.getCampusId())
+                .studentId(user.getStudentId())
+                .universityId(user.getUniversityId())
+                .campusId(user.getCampusUuid())
                 .studentType(user.getStudentType().name().toUpperCase(Locale.ROOT))
                 .status(toApiStatus(user.getStatus()))
                 .roles(user.getRoles().stream().map(Role::getName).toList())
@@ -158,8 +161,10 @@ public class AuthServiceImpl implements AuthService {
             String fullName,
             String email,
             String rawPassword,
-            String campusId,
-            StudentType studentType
+            StudentType studentType,
+            String studentId,
+            UUID universityId,
+            UUID campusId
     ) {
         if (userRepository.existsByEmail(email)) {
             throw new DuplicateEmailException("Email already exists");
@@ -169,6 +174,8 @@ public class AuthServiceImpl implements AuthService {
                 .fullName(fullName)
                 .email(email)
                 .password(passwordEncoder.encode(rawPassword))
+                .studentId(studentId)
+                .universityId(universityId)
                 .campusId(campusId)
                 .studentType(studentType)
                 .status(AccountStatus.approved)
@@ -198,7 +205,9 @@ public class AuthServiceImpl implements AuthService {
                 .id(user.getId())
                 .fullName(user.getFullName())
                 .email(user.getEmail())
-                .campusId(user.getCampusId())
+                .studentId(user.getStudentId())
+                .universityId(user.getUniversityId())
+                .campusId(user.getCampusUuid())
                 .studentType(user.getStudentType().name().toUpperCase(Locale.ROOT))
                 .status(toApiStatus(user.getStatus()))
                 .roles(user.getRoles().stream().map(Role::getName).toList())

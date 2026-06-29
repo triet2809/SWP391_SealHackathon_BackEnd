@@ -13,14 +13,16 @@ Request body cần:
   "fullName": "Nguyen Van A",
   "email": "a@fpt.edu.vn",
   "password": "123456",
-  "campusId": "SE123456"
+  "studentId": "SE123456",
+  "universityId": "11111111-1111-1111-1111-111111111111",
+  "campusId": "22222222-2222-2222-2222-222222222222"
 }
 ```
 
 Flow xử lý:
 
 1. Controller nhận request và chạy validation bằng annotation như `@NotBlank`, `@Email`, `@Size`.
-2. `AuthServiceImpl.registerFpt()` kiểm tra `campusId` có rỗng hay không.
+2. `AuthServiceImpl.registerFpt()` gán `studentType = fpt`, `studentId`, `universityId` và `campusId` theo request.
 3. Hệ thống kiểm tra email đã tồn tại trong bảng `users` chưa.
 4. Nếu email chưa tồn tại, password sẽ được hash bằng `BCryptPasswordEncoder`.
 5. Hệ thống gán `studentType = fpt`, `status = active`.
@@ -29,7 +31,8 @@ Flow xử lý:
 
 Ý chính:
 
-- FPT student bắt buộc có `campusId`.
+- FPT student bắt buộc có `universityId` và `campusId`.
+- `studentId` là optional.
 - Password không bao giờ lưu dạng plain text.
 
 ## 2. Register External hoạt động như thế nào
@@ -42,15 +45,17 @@ Request body cần:
 {
   "fullName": "Tran Van B",
   "email": "b@gmail.com",
-  "password": "123456"
+  "password": "123456",
+  "universityId": "33333333-3333-3333-3333-333333333333"
 }
 ```
 
 Flow gần giống register FPT, chỉ khác ở chỗ:
 
-1. Không yêu cầu `campusId`.
-2. `studentType` sẽ là `external`.
-3. Các bước còn lại như check email trùng, hash password, gán role mặc định vẫn giống nhau.
+1. Bắt buộc có `universityId`.
+2. Không có `campusId`.
+3. `studentType` sẽ là `external`.
+4. Các bước còn lại như check email trùng, hash password, gán role mặc định vẫn giống nhau.
 
 ## 3. Login hoạt động như thế nào
 
@@ -226,7 +231,9 @@ Body:
   "fullName": "Nguyen Van A",
   "email": "a@fpt.edu.vn",
   "password": "123456",
-  "campusId": "SE123456"
+  "studentId": "SE123456",
+  "universityId": "11111111-1111-1111-1111-111111111111",
+  "campusId": "22222222-2222-2222-2222-222222222222"
 }
 ```
 
@@ -342,8 +349,8 @@ Khi test bằng Swagger UI tại `http://localhost:8080/swagger-ui/index.html`, 
    - `POST /auth/refresh-token`
    - `POST /auth/logout`
    - `GET /auth/me`
-2. Kiểm tra request schema của `register/fpt` có `campusId` và ví dụ dữ liệu.
-3. Kiểm tra request schema của `register/external` không yêu cầu `campusId`.
+2. Kiểm tra request schema của `register/fpt` có `studentId`, `universityId`, `campusId` và ví dụ dữ liệu UUID.
+3. Kiểm tra request schema của `register/external` có `universityId` và không có `campusId`.
 4. Gọi `register/fpt` hoặc `register/external` với email mới và xác nhận nhận `201`.
 5. Gọi lại endpoint register với cùng email để xác nhận nhận `409 Conflict`.
 6. Gọi `login` và copy `accessToken`, `refreshToken` từ response.

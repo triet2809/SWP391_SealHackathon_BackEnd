@@ -55,7 +55,13 @@ public class User {
 
     // API auth hiện dùng field campusId theo đề bài, nhưng schema hiện tại lưu mã này ở cột student_id.
     @Column(name = "student_id", length = 50)
-    private String campusId;
+    private String studentId;
+
+    @Column(name = "university_id")
+    private UUID universityId;
+
+    @Column(name = "campus_id")
+    private UUID campusId;
 
     @Enumerated(EnumType.STRING)
     @JdbcType(PostgreSQLEnumJdbcType.class)
@@ -84,6 +90,14 @@ public class User {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public String getCampusId() {
+        return campusId == null ? null : campusId.toString();
+    }
+
+    public UUID getCampusUuid() {
+        return campusId;
+    }
 
     @PrePersist
     public void prePersist() {

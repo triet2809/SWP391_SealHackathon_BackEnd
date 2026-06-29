@@ -3,9 +3,12 @@ package com.fpt.sealhackathon.dto.auth;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -25,7 +28,14 @@ public class FptRegisterRequest {
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
-    @Schema(description = "Ma campus/student cua sinh vien FPT", example = "SE123456")
-    @NotBlank(message = "Campus ID is required")
-    private String campusId;
+    @Schema(description = "Ma sinh vien FPT neu co", example = "SE123456")
+    private String studentId;
+
+    @Schema(description = "ID truong dai hoc cua sinh vien FPT", example = "11111111-1111-1111-1111-111111111111")
+    @NotNull(message = "University ID is required")
+    private UUID universityId;
+
+    @Schema(description = "ID campus cua sinh vien FPT", example = "22222222-2222-2222-2222-222222222222")
+    @NotNull(message = "Campus ID is required")
+    private UUID campusId;
 }
