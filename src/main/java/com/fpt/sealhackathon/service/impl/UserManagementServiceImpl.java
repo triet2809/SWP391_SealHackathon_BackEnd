@@ -184,11 +184,20 @@ public class UserManagementServiceImpl implements UserManagementService {
 
             if (search != null) {
                 String keyword = "%" + search.toLowerCase(Locale.ROOT) + "%";
-                predicates.add(criteriaBuilder.or(
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("fullName")), keyword),
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), keyword),
-                        criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("campusId"), "")), keyword)
-                ));
+                List<Predicate> searchPredicates = new ArrayList<>();
+                // lower() chi dung cho cac field String; neu search la UUID hop le thi parse UUID va dung equal() cho id.
+                searchPredicates.add(criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("fullName"), "")), keyword));
+                searchPredicates.add(criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("email"), "")), keyword));
+                searchPredicates.add(criteriaBuilder.like(criteriaBuilder.lower(criteriaBuilder.coalesce(root.get("campusId"), "")), keyword));
+
+                try {
+                    UUID parsedUuid = UUID.fromString(search);
+                    searchPredicates.add(criteriaBuilder.equal(root.get("id"), parsedUuid));
+                } catch (IllegalArgumentException ignored) {
+                    // Search khong phai UUID hop le thi bo qua predicate id.
+                }
+
+                predicates.add(criteriaBuilder.or(searchPredicates.toArray(Predicate[]::new)));
             }
 
             return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
