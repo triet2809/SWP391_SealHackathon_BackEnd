@@ -1,0 +1,69 @@
+package vn.edu.fpt.seal.modules.user.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import vn.edu.fpt.seal.common.entity.BaseEntity;
+import vn.edu.fpt.seal.common.enums.AccountStatus;
+import vn.edu.fpt.seal.common.enums.StudentType;
+import vn.edu.fpt.seal.modules.university.entity.Campus;
+import vn.edu.fpt.seal.modules.university.entity.University;
+
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = "users")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class User extends BaseEntity {
+
+    @Column(name = "email", nullable = false, unique = true, length = 255)
+    private String email;
+
+    @Column(name = "password_hash", nullable = false, length = 255)
+    private String passwordHash;
+
+    @Column(name = "full_name", nullable = false, length = 255)
+    private String fullName;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "student_type", nullable = false, columnDefinition = "student_type")
+    @Builder.Default
+    private StudentType studentType = StudentType.none;
+
+    @Column(name = "student_id", length = 100)
+    private String studentId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "university_id")
+    private University university;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "campus_id")
+    private Campus campus;
+
+    @Column(name = "is_guest", nullable = false)
+    @Builder.Default
+    private boolean isGuest = false;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "status", nullable = false, columnDefinition = "account_status")
+    @Builder.Default
+    private AccountStatus status = AccountStatus.pending;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    @Builder.Default
+    private Set<Role> roles = new HashSet<>();
+}

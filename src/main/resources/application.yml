@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: seal-hackathon-backend
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:seal_hackathon}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+    open-in-view: false
+    show-sql: false
+
+  jackson:
+    default-property-inclusion: non_null
+    time-zone: UTC
+
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api
+  error:
+    include-message: always
+    include-binding-errors: always
+
+app:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:change-this-to-a-very-long-random-secret-key-min-256-bits-for-hs256-algorithm-please}
+      access-token-expiration-minutes: 60
+      refresh-token-expiration-days: 7
+      issuer: seal-hackathon
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+      - http://127.0.0.1:5173
+      - http://192.168.100.214:5173
+      - http://localhost:3000
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+logging:
+  level:
+    root: INFO
+    vn.edu.fpt.seal: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: INFO

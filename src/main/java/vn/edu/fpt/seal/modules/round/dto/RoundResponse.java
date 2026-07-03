@@ -1,0 +1,20 @@
+package vn.edu.fpt.seal.modules.round.dto;
+
+import lombok.Builder;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Builder
+public record RoundResponse(
+        UUID id,
+        UUID trackId,
+        UUID eventId,
+        String name,
+        Integer sequenceNumber,
+        LocalDateTime submissionDeadline,
+        Integer topNToPromote,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
+) {
+}
