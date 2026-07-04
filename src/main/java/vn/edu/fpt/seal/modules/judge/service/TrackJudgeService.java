@@ -14,6 +14,7 @@ import vn.edu.fpt.seal.modules.track.entity.Track;
 import vn.edu.fpt.seal.modules.track.repository.TrackRepository;
 import vn.edu.fpt.seal.modules.user.entity.User;
 import vn.edu.fpt.seal.modules.user.repository.UserRepository;
+import vn.edu.fpt.seal.modules.notification.service.NotificationService;
 
 import java.util.UUID;
 
@@ -22,6 +23,7 @@ public class TrackJudgeService {
     private final TrackJudgeRepository trackJudgeRepository;
     private final TrackRepository trackRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public Page<TrackJudgeResponse> list(UUID trackId, UUID userId, Pageable pageable) {
@@ -39,7 +41,10 @@ public class TrackJudgeService {
         if (!hasJudgeRole) throw ApiException.badRequest("Assigned user must have judge role");
         if (trackJudgeRepository.existsByTrackIdAndUserId(track.getId(), user.getId())) throw ApiException.conflict("Judge already assigned to this track");
         if (trackJudgeRepository.existsByEventIdAndUserId(track.getEvent().getId(), user.getId())) throw ApiException.conflict("Judge already assigned in this event");
-        return TrackJudgeMapper.toResponse(trackJudgeRepository.save(TrackJudge.builder().event(track.getEvent()).track(track).user(user).build()));
+        TrackJudge saved = trackJudgeRepository.save(TrackJudge.builder().event(track.getEvent()).track(track).user(user).build());
+        notificationService.emit(user.getId(), "JUDGE_ASSIGNMENT", "assignments",
+                "Phân công chấm thi", "Bạn được phân công chấm track " + track.getName(), "track", track.getId());
+        return TrackJudgeMapper.toResponse(saved);
     }
 
     @Transactional public void remove(UUID id) { trackJudgeRepository.delete(trackJudgeRepository.findById(id).orElseThrow(() -> ApiException.notFound("Track judge assignment not found: " + id))); }

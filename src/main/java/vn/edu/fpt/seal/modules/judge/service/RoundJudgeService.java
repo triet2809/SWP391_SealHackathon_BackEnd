@@ -14,6 +14,7 @@ import vn.edu.fpt.seal.modules.round.entity.Round;
 import vn.edu.fpt.seal.modules.round.repository.RoundRepository;
 import vn.edu.fpt.seal.modules.user.entity.User;
 import vn.edu.fpt.seal.modules.user.repository.UserRepository;
+import vn.edu.fpt.seal.modules.notification.service.NotificationService;
 
 import java.util.*;
 
@@ -22,6 +23,7 @@ public class RoundJudgeService {
     private final RoundJudgeRepository roundJudgeRepository;
     private final RoundRepository roundRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public Page<RoundJudgeResponse> list(UUID roundId, UUID userId, Pageable pageable) {
@@ -38,7 +40,10 @@ public class RoundJudgeService {
         boolean hasJudgeRole = user.getRoles() != null && user.getRoles().stream().anyMatch(r -> "judge".equalsIgnoreCase(r.getName()));
         if (!hasJudgeRole) throw ApiException.badRequest("Assigned user must have judge role");
         if (roundJudgeRepository.existsByRoundIdAndUserId(round.getId(), user.getId())) throw ApiException.conflict("Judge already assigned to this round");
-        return RoundJudgeMapper.toResponse(roundJudgeRepository.save(RoundJudge.builder().round(round).user(user).build()));
+        RoundJudge saved = roundJudgeRepository.save(RoundJudge.builder().round(round).user(user).build());
+        notificationService.emit(user.getId(), "JUDGE_ASSIGNMENT", "assignments",
+                "Phân công chấm thi", "Bạn được phân công chấm vòng " + round.getName(), "round", round.getId());
+        return RoundJudgeMapper.toResponse(saved);
     }
 
     @Transactional public void remove(UUID id) { roundJudgeRepository.delete(roundJudgeRepository.findById(id).orElseThrow(() -> ApiException.notFound("Round judge assignment not found: " + id))); }
