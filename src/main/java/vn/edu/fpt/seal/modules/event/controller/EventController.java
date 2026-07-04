@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.fpt.seal.common.enums.EventStatus;
 import vn.edu.fpt.seal.modules.event.dto.ChangeEventStatusRequest;
@@ -77,8 +78,8 @@ public class EventController {
     @PostMapping("/{id}/close-registration")
     @PreAuthorize("hasRole('COORDINATOR')")
     @Operation(summary = "Close registration: published -> ongoing (coordinator only)")
-    public ResponseEntity<EventResponse> closeRegistration(@PathVariable UUID id) {
-        return ResponseEntity.ok(eventService.closeRegistration(id));
+    public ResponseEntity<EventResponse> closeRegistration(@PathVariable UUID id, Authentication auth) {
+        return ResponseEntity.ok(eventService.closeRegistration(id, auth));
     }
 
     @PostMapping("/{id}/setup-competition")

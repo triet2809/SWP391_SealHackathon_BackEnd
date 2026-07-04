@@ -6,9 +6,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.fpt.seal.common.enums.AuditAction;
 import vn.edu.fpt.seal.common.enums.EventStatus;
+import vn.edu.fpt.seal.common.enums.TeamStatus;
 import vn.edu.fpt.seal.common.enums.RoundParticipantStatus;
 import vn.edu.fpt.seal.common.exception.ApiException;
+import vn.edu.fpt.seal.modules.audit.entity.AuditLog;
+import vn.edu.fpt.seal.modules.audit.repository.AuditLogRepository;
 import vn.edu.fpt.seal.modules.event.dto.CreateEventRequest;
 import vn.edu.fpt.seal.modules.event.dto.EventResponse;
 import vn.edu.fpt.seal.modules.event.dto.SetupCompetitionRequest;
@@ -22,9 +26,14 @@ import vn.edu.fpt.seal.modules.participant.repository.RoundParticipantRepository
 import vn.edu.fpt.seal.modules.round.entity.Round;
 import vn.edu.fpt.seal.modules.round.repository.RoundRepository;
 import vn.edu.fpt.seal.modules.team.entity.Team;
+import vn.edu.fpt.seal.modules.team.repository.TeamMemberRepository;
 import vn.edu.fpt.seal.modules.team.repository.TeamRepository;
 import vn.edu.fpt.seal.modules.track.entity.Track;
 import vn.edu.fpt.seal.modules.track.repository.TrackRepository;
+import vn.edu.fpt.seal.modules.user.entity.User;
+import vn.edu.fpt.seal.modules.user.repository.UserRepository;
+import vn.edu.fpt.seal.security.CurrentUser;
+import org.springframework.security.core.Authentication;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -45,9 +54,15 @@ public class EventService {
     private final RoundRepository roundRepository;
     private final TeamRepository teamRepository;
     private final RoundParticipantRepository roundParticipantRepository;
+    private final TeamMemberRepository teamMemberRepository;
+    private final AuditLogRepository auditLogRepository;
+    private final UserRepository userRepository;
 
     /** Default track name auto-created while registration is open. */
     private static final String GENERAL_TRACK = "General";
+
+    /** A team needs at least this many members to compete; smaller teams are eliminated at registration close. */
+    private static final int MIN_TEAM_SIZE = 3;
 
     // Status transition rules:
     //   draft     -> published, cancelled
@@ -193,15 +208,47 @@ public class EventService {
      * join (enforced in TeamService), and the organiser can build the competition.
      */
     @Transactional
-    public EventResponse closeRegistration(UUID id) {
+    public EventResponse closeRegistration(UUID id, Authentication auth) {
         Event e = findOrThrow(id);
         if (e.getStatus() != EventStatus.published) {
             throw ApiException.badRequest("Registration can only be closed when published (current: " + e.getStatus() + ")");
         }
+        // Teams that never reached the minimum size are eliminated when the form
+        // closes: an under-strength team cannot compete. This leaves an audit trail.
+        List<Team> teams = teamRepository.findByTrackEventId(e.getId());
+        int eliminated = 0;
+        for (Team t : teams) {
+            if (t.getStatus() != TeamStatus.active) continue;
+            long members = teamMemberRepository.countByTeamId(t.getId());
+            if (members < MIN_TEAM_SIZE) {
+                String reason = "Không đủ thành viên khi đóng đăng ký (" + members + "/" + MIN_TEAM_SIZE + ")";
+                t.setStatus(TeamStatus.disqualified);
+                t.setDisqualifiedReason(reason);
+                writeTeamAudit(auth, t, AuditAction.DISQUALIFY_TEAM, TeamStatus.active.name(), TeamStatus.disqualified.name(), reason);
+                eliminated++;
+            }
+        }
         e.setStatus(EventStatus.ongoing);
-        long teams = teamRepository.countByTrackEventId(e.getId());
-        log.info("Event {} registration closed (published -> ongoing); {} teams registered", e.getId(), teams);
+        log.info("Event {} registration closed (published -> ongoing); {} teams registered, {} eliminated for being under {} members",
+                e.getId(), teams.size(), eliminated, MIN_TEAM_SIZE);
         return toResponseWithCounts(e);
+    }
+
+    private void writeTeamAudit(Authentication auth, Team team, AuditAction action, String oldValue, String newValue, String details) {
+        User actor = null;
+        if (auth != null && auth.getPrincipal() instanceof CurrentUser c) {
+            actor = userRepository.findById(c.getId()).orElse(null);
+        }
+        auditLogRepository.save(AuditLog.builder()
+                .user(actor)
+                .team(team)
+                .action(action)
+                .targetType("team")
+                .targetId(team.getId())
+                .oldValue(oldValue)
+                .newValue(newValue)
+                .details(details)
+                .build());
     }
 
     /**
@@ -220,9 +267,12 @@ public class EventService {
             throw ApiException.conflict("Competition already set up for this event");
         }
 
-        List<Team> teams = teamRepository.findByTrackEventId(e.getId());
+        // Only active teams take part; under-strength teams were disqualified at registration close.
+        List<Team> teams = teamRepository.findByTrackEventId(e.getId()).stream()
+                .filter(t -> t.getStatus() == TeamStatus.active)
+                .collect(java.util.stream.Collectors.toList());
         if (teams.isEmpty()) {
-            throw ApiException.badRequest("No teams registered; cannot build the competition");
+            throw ApiException.badRequest("No eligible (active) teams registered; cannot build the competition");
         }
 
         // 1) Resolve target tracks.
