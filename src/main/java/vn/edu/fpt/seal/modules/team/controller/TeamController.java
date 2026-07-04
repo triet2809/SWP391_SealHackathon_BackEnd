@@ -34,6 +34,8 @@ public class TeamController {
     public ResponseEntity<TeamResponse> create(@Valid @RequestBody CreateTeamRequest req, Authentication auth) { return ResponseEntity.ok(teamService.create(req, auth)); }
     @PatchMapping("/{id}") @PreAuthorize("hasRole('COORDINATOR')") @Operation(summary = "Update team")
     public ResponseEntity<TeamResponse> update(@PathVariable UUID id, @Valid @RequestBody UpdateTeamRequest req) { return ResponseEntity.ok(teamService.update(id, req)); }
+    @PostMapping("/{id}/move-track") @PreAuthorize("hasRole('COORDINATOR')") @Operation(summary = "Move team to another track in the same event")
+    public ResponseEntity<TeamResponse> moveTrack(@PathVariable UUID id, @Valid @RequestBody MoveTeamTrackRequest req, Authentication auth) { return ResponseEntity.ok(teamService.moveToTrack(id, req, auth)); }
     @PostMapping("/{id}/members") @PreAuthorize("hasRole('COORDINATOR')") @Operation(summary = "Add member")
     public ResponseEntity<TeamResponse> addMember(@PathVariable UUID id, @Valid @RequestBody AddTeamMemberRequest req) { return ResponseEntity.ok(teamService.addMember(id, req)); }
     @DeleteMapping("/{id}/members/{userId}") @PreAuthorize("hasRole('COORDINATOR')") @Operation(summary = "Remove member")

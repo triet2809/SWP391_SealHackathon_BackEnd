@@ -100,6 +100,27 @@ public class TeamService {
     }
 
     @Transactional
+    public TeamResponse moveToTrack(UUID id, MoveTeamTrackRequest req, Authentication auth) {
+        Team team = findOrThrow(id);
+        Track target = trackRepository.findById(req.trackId()).orElseThrow(() -> ApiException.notFound("Track not found: " + req.trackId()));
+        Track current = team.getTrack();
+        if (current.getId().equals(target.getId())) return toResponse(team);
+        // Target track must be in the same event (cross-event moves are not allowed).
+        if (!current.getEvent().getId().equals(target.getEvent().getId()))
+            throw ApiException.badRequest("Target track must belong to the same event");
+        ensureEditable(target);
+        // Name must stay unique within the destination track.
+        if (teamRepository.existsByTrackIdAndNameIgnoreCase(target.getId(), team.getName()))
+            throw ApiException.conflict("A team with this name already exists in the target track");
+        String oldTrack = current.getId().toString();
+        team.setTrack(target);
+        // Requirement #10-style audit trail: record cross-track moves.
+        writeAudit(auth, team, AuditAction.PROMOTE_TEAM, oldTrack, target.getId().toString(), "Moved team to track " + target.getName());
+        log.info("Team moved: id={}, from track={}, to track={}", team.getId(), oldTrack, target.getId());
+        return toResponse(team);
+    }
+
+    @Transactional
     public TeamResponse joinByInviteCode(JoinTeamRequest req, Authentication auth) {
         UUID callerId = currentUserId(auth);
         String code = req.inviteCode().trim().toLowerCase().replace("seal-", "").replace("-", "");
