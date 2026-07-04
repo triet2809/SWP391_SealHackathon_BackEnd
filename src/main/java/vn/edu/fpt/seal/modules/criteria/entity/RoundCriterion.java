@@ -22,6 +22,7 @@ public class RoundCriterion {
     @Column(name = "name", nullable = false, length = 255) private String name;
     @Column(name = "weight", nullable = false, precision = 10, scale = 2) private BigDecimal weight;
     @Column(name = "description", columnDefinition = "text") private String description;
+    @Column(name = "status", length = 50) private String status;
     @CreationTimestamp @Column(name = "created_at", nullable = false, updatable = false) private LocalDateTime createdAt;
     @UpdateTimestamp @Column(name = "updated_at") private LocalDateTime updatedAt;
 }

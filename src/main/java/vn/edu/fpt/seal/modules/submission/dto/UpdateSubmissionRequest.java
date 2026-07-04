@@ -8,5 +8,8 @@ public record UpdateSubmissionRequest(
         @URL @Size(max = 500) String demoUrl,
         @URL @Size(max = 500) String slideUrl,
         @URL @Size(max = 500) String reportUrl,
-        @Size(max = 10000) String apiMetadata
+        @Size(max = 10000) String apiMetadata,
+        @Size(max = 255) String projectName,
+        @Size(max = 50) String version,
+        @Size(max = 50) String reviewStatus
 ) {}

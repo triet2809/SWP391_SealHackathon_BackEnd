@@ -9,5 +9,6 @@ public record CreateRoundCriterionRequest(
         UUID templateId,
         @NotBlank @Size(max = 255) String name,
         @NotNull @DecimalMin("0.00") BigDecimal weight,
-        @Size(max = 10000) String description
+        @Size(max = 10000) String description,
+        @Size(max = 50) String status
 ) {}

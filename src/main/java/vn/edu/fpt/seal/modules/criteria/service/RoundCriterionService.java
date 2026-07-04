@@ -25,13 +25,13 @@ public class RoundCriterionService {
     @Transactional public RoundCriterionResponse create(CreateRoundCriterionRequest req) {
         Round round = roundRepository.findById(req.roundId()).orElseThrow(() -> ApiException.notFound("Round not found: " + req.roundId())); ensureEditable(round);
         String name = req.name().trim(); if (criterionRepository.existsByRoundIdAndNameIgnoreCase(round.getId(), name)) throw ApiException.conflict("Criterion name already exists in this round");
-        RoundCriterion c = criterionRepository.save(RoundCriterion.builder().round(round).templateId(req.templateId()).name(name).weight(req.weight()).description(trim(req.description())).build());
+        RoundCriterion c = criterionRepository.save(RoundCriterion.builder().round(round).templateId(req.templateId()).name(name).weight(req.weight()).description(trim(req.description())).status(req.status()==null?"active":req.status().trim()).build());
         return RoundCriterionMapper.toResponse(c);
     }
     @Transactional public RoundCriterionResponse update(UUID id, UpdateRoundCriterionRequest req) {
         RoundCriterion c = findOrThrow(id); ensureEditable(c.getRound());
         if (req.name()!=null) { String name=req.name().trim(); if (!name.equalsIgnoreCase(c.getName()) && criterionRepository.existsByRoundIdAndNameIgnoreCase(c.getRound().getId(), name)) throw ApiException.conflict("Criterion name already exists in this round"); c.setName(name); }
-        if (req.weight()!=null) c.setWeight(req.weight()); if (req.description()!=null) c.setDescription(trim(req.description())); return RoundCriterionMapper.toResponse(c);
+        if (req.weight()!=null) c.setWeight(req.weight()); if (req.description()!=null) c.setDescription(trim(req.description())); if (req.status()!=null) c.setStatus(req.status().trim()); return RoundCriterionMapper.toResponse(c);
     }
     @Transactional public void delete(UUID id) { RoundCriterion c=findOrThrow(id); ensureEditable(c.getRound()); criterionRepository.delete(c); }
     private RoundCriterion findOrThrow(UUID id) { return criterionRepository.findWithRoundById(id).orElseThrow(() -> ApiException.notFound("Criterion not found: " + id)); }

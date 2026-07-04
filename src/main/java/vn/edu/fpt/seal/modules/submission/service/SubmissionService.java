@@ -42,7 +42,7 @@ public class SubmissionService {
         Team team = teamRepository.findWithTrackById(req.teamId()).orElseThrow(() -> ApiException.notFound("Team not found: " + req.teamId()));
         validateRoundTeam(round, team); ensureCanSubmit(team, auth); ensureSubmissionOpen(round);
         Submission s = submissionRepository.findByRoundIdAndTeamId(round.getId(), team.getId()).orElseGet(() -> Submission.builder().round(round).team(team).build());
-        apply(s, req.repoUrl(), req.demoUrl(), req.slideUrl(), req.reportUrl(), req.apiMetadata());
+        apply(s, req.repoUrl(), req.demoUrl(), req.slideUrl(), req.reportUrl(), req.apiMetadata(), req.projectName(), req.version(), req.reviewStatus());
         s = submissionRepository.save(s);
         log.info("Submission upserted: id={}, round={}, team={}", s.getId(), round.getId(), team.getId());
         return SubmissionMapper.toResponse(s);
@@ -50,13 +50,14 @@ public class SubmissionService {
     @Transactional
     public SubmissionResponse update(UUID id, UpdateSubmissionRequest req, Authentication auth) {
         Submission s = findOrThrow(id); ensureCanSubmit(s.getTeam(), auth); ensureSubmissionOpen(s.getRound());
-        apply(s, req.repoUrl(), req.demoUrl(), req.slideUrl(), req.reportUrl(), req.apiMetadata()); return SubmissionMapper.toResponse(s);
+        apply(s, req.repoUrl(), req.demoUrl(), req.slideUrl(), req.reportUrl(), req.apiMetadata(), req.projectName(), req.version(), req.reviewStatus()); return SubmissionMapper.toResponse(s);
     }
     @Transactional public void delete(UUID id) { Submission s = findOrThrow(id); ensureSubmissionOpen(s.getRound()); submissionRepository.delete(s); }
     private Submission findOrThrow(UUID id) { return submissionRepository.findWithRelationsById(id).orElseThrow(() -> ApiException.notFound("Submission not found: " + id)); }
-    private void apply(Submission s, String repoUrl, String demoUrl, String slideUrl, String reportUrl, String apiMetadata) {
+    private void apply(Submission s, String repoUrl, String demoUrl, String slideUrl, String reportUrl, String apiMetadata, String projectName, String version, String reviewStatus) {
         if (repoUrl != null) s.setRepoUrl(blankToNull(repoUrl)); if (demoUrl != null) s.setDemoUrl(blankToNull(demoUrl));
         if (slideUrl != null) s.setSlideUrl(blankToNull(slideUrl)); if (reportUrl != null) s.setReportUrl(blankToNull(reportUrl)); if (apiMetadata != null) s.setApiMetadata(blankToNull(apiMetadata));
+        if (projectName != null) s.setProjectName(blankToNull(projectName)); if (version != null) s.setVersion(blankToNull(version)); if (reviewStatus != null) s.setReviewStatus(blankToNull(reviewStatus));
     }
     private void validateRoundTeam(Round round, Team team) {
         if (!round.getTrack().getId().equals(team.getTrack().getId())) throw ApiException.badRequest("Team must belong to the same track as round");

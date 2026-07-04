@@ -18,4 +18,6 @@ public interface RoundRepository extends JpaRepository<Round, UUID> {
     boolean existsByTrackIdAndSequenceNumber(UUID trackId, Integer sequenceNumber);
 
     java.util.Optional<Round> findTopByTrackIdOrderBySequenceNumberDesc(UUID trackId);
+
+    long countByTrackEventId(UUID eventId);
 }

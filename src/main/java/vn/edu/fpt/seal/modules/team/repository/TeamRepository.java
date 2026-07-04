@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import vn.edu.fpt.seal.modules.team.entity.Team;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,4 +20,9 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
 
     @EntityGraph(attributePaths = {"track", "track.event"})
     Optional<Team> findWithTrackById(UUID id);
+
+    long countByTrackEventId(UUID eventId);
+
+    @EntityGraph(attributePaths = {"track", "track.event"})
+    List<Team> findByTrackEventId(UUID eventId);
 }

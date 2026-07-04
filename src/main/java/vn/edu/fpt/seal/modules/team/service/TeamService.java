@@ -61,6 +61,7 @@ public class TeamService {
     public TeamResponse create(CreateTeamRequest req, Authentication auth) {
         Track track = trackRepository.findById(req.trackId()).orElseThrow(() -> ApiException.notFound("Track not found: " + req.trackId()));
         ensureEditable(track);
+        ensureRegistrationOpen(track);
         String name = req.name().trim();
         if (teamRepository.existsByTrackIdAndNameIgnoreCase(track.getId(), name)) throw ApiException.conflict("Team name already exists in this track");
 
@@ -107,6 +108,7 @@ public class TeamService {
                 .findFirst()
                 .orElseThrow(() -> ApiException.notFound("Team invite code not found"));
         ensureEditable(team.getTrack());
+        ensureRegistrationOpen(team.getTrack());
         if (teamMemberRepository.existsByTeamIdAndUserId(team.getId(), callerId)) return toResponse(team);
         if (teamMemberRepository.countByTeamId(team.getId()) >= MAX_TEAM_SIZE) throw ApiException.badRequest("A team can have at most " + MAX_TEAM_SIZE + " members");
         addMemberInternal(team, callerId, TeamMemberRole.member);
@@ -158,6 +160,8 @@ public class TeamService {
         return teamMemberRepository.save(TeamMember.builder().team(team).user(user).role(role).build());
     }
     private void ensureEditable(Track track) { EventStatus s = track.getEvent().getStatus(); if (s == EventStatus.completed || s == EventStatus.cancelled) throw ApiException.badRequest("Cannot edit teams in event status " + s); }
+    /** Team registration (create/join) is only allowed while the event has registration open (status=published). */
+    private void ensureRegistrationOpen(Track track) { EventStatus s = track.getEvent().getStatus(); if (s != EventStatus.published) throw ApiException.badRequest("Registration is not open for this event (status: " + s + ")"); }
     private void ensureDraft(Track track) { EventStatus s = track.getEvent().getStatus(); if (s != EventStatus.draft) throw ApiException.badRequest("Teams can only be deleted while event is draft (current: " + s + ")"); }
 
     private boolean isCoordinator(Authentication auth) {

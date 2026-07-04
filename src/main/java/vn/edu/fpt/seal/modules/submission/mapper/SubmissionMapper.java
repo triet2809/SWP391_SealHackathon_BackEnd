@@ -17,6 +17,9 @@ public final class SubmissionMapper {
                 .slideUrl(s.getSlideUrl())
                 .reportUrl(s.getReportUrl())
                 .apiMetadata(s.getApiMetadata())
+                .projectName(s.getProjectName())
+                .version(s.getVersion())
+                .reviewStatus(s.getReviewStatus())
                 .submittedAt(s.getSubmittedAt())
                 .updatedAt(s.getUpdatedAt())
                 .build();

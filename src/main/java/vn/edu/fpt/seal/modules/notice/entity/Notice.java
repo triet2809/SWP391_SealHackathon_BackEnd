@@ -15,5 +15,6 @@ public class Notice extends BaseEntity {
     @Column(name = "target_role", length = 100) private String targetRole;
     @Column(name = "target_event_id", columnDefinition = "uuid") private java.util.UUID targetEventId;
     @Column(name = "target_track_id", columnDefinition = "uuid") private java.util.UUID targetTrackId;
+    @Column(name = "target_team_id", columnDefinition = "uuid") private java.util.UUID targetTeamId;
     @ManyToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = "author_id", nullable = false) private User author;
 }

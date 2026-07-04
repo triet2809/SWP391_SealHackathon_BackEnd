@@ -12,7 +12,7 @@ public interface NoticeRepository extends JpaRepository<Notice, UUID> {
     @EntityGraph(attributePaths = {"author"})
     @Query("""
             select n from Notice n
-            where (:targetRole is null or n.targetRole is null or lower(n.targetRole) = lower(:targetRole))
+            where (cast(:targetRole as string) is null or n.targetRole is null or lower(n.targetRole) = lower(cast(:targetRole as string)))
               and (:eventId is null or n.targetEventId is null or n.targetEventId = :eventId)
               and (:trackId is null or n.targetTrackId is null or n.targetTrackId = :trackId)
             order by n.createdAt desc

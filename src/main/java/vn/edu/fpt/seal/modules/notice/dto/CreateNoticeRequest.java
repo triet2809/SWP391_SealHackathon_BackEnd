@@ -10,5 +10,6 @@ public record CreateNoticeRequest(
         @Size(max = 20) String priority,
         @Size(max = 100) String targetRole,
         UUID targetEventId,
-        UUID targetTrackId
+        UUID targetTrackId,
+        UUID targetTeamId
 ) {}

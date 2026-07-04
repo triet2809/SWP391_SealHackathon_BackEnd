@@ -32,6 +32,9 @@ public class Submission {
     @Column(name = "slide_url", length = 500) private String slideUrl;
     @Column(name = "report_url", length = 500) private String reportUrl;
     @Column(name = "api_metadata", columnDefinition = "text") private String apiMetadata;
+    @Column(name = "project_name", length = 255) private String projectName;
+    @Column(name = "version", length = 50) private String version;
+    @Column(name = "review_status", length = 50) private String reviewStatus;
 
     @CreationTimestamp @Column(name = "submitted_at", nullable = false, updatable = false)
     private LocalDateTime submittedAt;

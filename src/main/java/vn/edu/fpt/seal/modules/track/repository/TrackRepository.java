@@ -14,4 +14,6 @@ public interface TrackRepository extends JpaRepository<Track, UUID> {
     Page<Track> findByEventId(UUID eventId, Pageable pageable);
 
     boolean existsByEventIdAndNameIgnoreCase(UUID eventId, String name);
+
+    long countByEventId(UUID eventId);
 }

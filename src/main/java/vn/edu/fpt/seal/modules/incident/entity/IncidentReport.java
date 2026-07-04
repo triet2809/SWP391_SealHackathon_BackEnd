@@ -16,6 +16,8 @@ public class IncidentReport {
  @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="assigned_coordinator_id") private User assignedCoordinator;
  @Enumerated(EnumType.STRING) @JdbcTypeCode(SqlTypes.NAMED_ENUM) @Column(name="type",nullable=false,columnDefinition="incident_type") private IncidentType type;
  @Enumerated(EnumType.STRING) @JdbcTypeCode(SqlTypes.NAMED_ENUM) @Column(name="status",nullable=false,columnDefinition="incident_status") @Builder.Default private IncidentStatus status=IncidentStatus.reported;
+ @Column(name="severity",length=50) private String severity;
+ @Column(name="category",length=100) private String category;
  @Column(name="title",nullable=false,length=255) private String title;
  @Column(name="description",nullable=false,columnDefinition="text") private String description;
  @CreationTimestamp @Column(name="created_at",nullable=false,updatable=false) private LocalDateTime createdAt;

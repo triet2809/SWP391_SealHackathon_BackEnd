@@ -6,4 +6,4 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Builder
-public record RoundCriterionResponse(UUID id, UUID roundId, UUID templateId, String name, BigDecimal weight, String description, LocalDateTime createdAt, LocalDateTime updatedAt) {}
+public record RoundCriterionResponse(UUID id, UUID roundId, UUID templateId, String name, BigDecimal weight, String description, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {}

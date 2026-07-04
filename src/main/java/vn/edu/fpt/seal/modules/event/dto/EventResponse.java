@@ -12,6 +12,15 @@ public record EventResponse(
         String title,
         String description,
         EventStatus status,
+        String term,
+        String prizePool,
+        LocalDateTime registrationStart,
+        LocalDateTime registrationEnd,
+        LocalDateTime eventStart,
+        LocalDateTime eventEnd,
+        Integer roundsCount,
+        Integer tracksCount,
+        Long participantsCount,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {

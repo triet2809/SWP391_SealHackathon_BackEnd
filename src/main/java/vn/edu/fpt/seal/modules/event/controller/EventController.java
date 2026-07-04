@@ -13,6 +13,8 @@ import vn.edu.fpt.seal.common.enums.EventStatus;
 import vn.edu.fpt.seal.modules.event.dto.ChangeEventStatusRequest;
 import vn.edu.fpt.seal.modules.event.dto.CreateEventRequest;
 import vn.edu.fpt.seal.modules.event.dto.EventResponse;
+import vn.edu.fpt.seal.modules.event.dto.SetupCompetitionRequest;
+import vn.edu.fpt.seal.modules.event.dto.SetupCompetitionResponse;
 import vn.edu.fpt.seal.modules.event.dto.UpdateEventRequest;
 import vn.edu.fpt.seal.modules.event.service.EventService;
 
@@ -63,6 +65,28 @@ public class EventController {
     public ResponseEntity<EventResponse> changeStatus(@PathVariable UUID id,
                                                       @Valid @RequestBody ChangeEventStatusRequest req) {
         return ResponseEntity.ok(eventService.changeStatus(id, req.status()));
+    }
+
+    @PostMapping("/{id}/open-registration")
+    @PreAuthorize("hasRole('COORDINATOR')")
+    @Operation(summary = "Open registration: draft -> published; auto-creates a General track (coordinator only)")
+    public ResponseEntity<EventResponse> openRegistration(@PathVariable UUID id) {
+        return ResponseEntity.ok(eventService.openRegistration(id));
+    }
+
+    @PostMapping("/{id}/close-registration")
+    @PreAuthorize("hasRole('COORDINATOR')")
+    @Operation(summary = "Close registration: published -> ongoing (coordinator only)")
+    public ResponseEntity<EventResponse> closeRegistration(@PathVariable UUID id) {
+        return ResponseEntity.ok(eventService.closeRegistration(id));
+    }
+
+    @PostMapping("/{id}/setup-competition")
+    @PreAuthorize("hasRole('COORDINATOR')")
+    @Operation(summary = "Build tracks + rounds and distribute teams after registration closes (coordinator only)")
+    public ResponseEntity<SetupCompetitionResponse> setupCompetition(@PathVariable UUID id,
+                                                                     @Valid @RequestBody(required = false) SetupCompetitionRequest req) {
+        return ResponseEntity.ok(eventService.setupCompetition(id, req));
     }
 
     @DeleteMapping("/{id}")

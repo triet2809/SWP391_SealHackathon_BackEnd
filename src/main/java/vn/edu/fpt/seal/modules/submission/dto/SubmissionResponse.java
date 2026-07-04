@@ -17,6 +17,9 @@ public record SubmissionResponse(
         String slideUrl,
         String reportUrl,
         String apiMetadata,
+        String projectName,
+        String version,
+        String reviewStatus,
         LocalDateTime submittedAt,
         LocalDateTime updatedAt
 ) {}
