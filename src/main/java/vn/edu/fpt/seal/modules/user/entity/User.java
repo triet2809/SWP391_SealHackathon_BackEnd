@@ -49,6 +49,15 @@ public class User extends BaseEntity {
     @Column(name = "position", length = 255)
     private String position;
 
+    @Column(name = "company", length = 255)
+    private String company;
+
+    @Column(name = "expertise", length = 255)
+    private String expertise;
+
+    @Column(name = "bio", columnDefinition = "text")
+    private String bio;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "university_id")
     private University university;
