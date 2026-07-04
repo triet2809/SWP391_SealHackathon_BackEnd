@@ -51,11 +51,23 @@ public class SubmissionService {
         Team team = teamRepository.findWithTrackById(req.teamId()).orElseThrow(() -> ApiException.notFound("Team not found: " + req.teamId()));
         validateRoundTeam(round, team); ensureCanSubmit(team, auth); ensureSubmissionOpen(round);
         Submission s = submissionRepository.findByRoundIdAndTeamId(round.getId(), team.getId()).orElseGet(() -> Submission.builder().round(round).team(team).build());
+        boolean wasSubmitted = "submitted".equalsIgnoreCase(s.getStatus());
         apply(s, req.repoUrl(), req.demoUrl(), req.slideUrl(), req.reportUrl(), req.apiMetadata(), req.projectName(), req.version(), req.reviewStatus());
+        String status = normalizeStatus(req.status());
+        s.setStatus(status);
         s = submissionRepository.save(s);
-        log.info("Submission upserted: id={}, round={}, team={}", s.getId(), round.getId(), team.getId());
-        notifyReviewers(round, team, s);
+        log.info("Submission upserted: id={}, round={}, team={}, status={}", s.getId(), round.getId(), team.getId(), status);
+        // Only ping reviewers when the team actually hands in (first transition to submitted), not on draft saves.
+        if ("submitted".equals(status) && !wasSubmitted) notifyReviewers(round, team, s);
         return SubmissionMapper.toResponse(s);
+    }
+
+    /** Default to draft; only accept the two known lifecycle values. */
+    private String normalizeStatus(String raw) {
+        if (raw == null || raw.isBlank()) return "draft";
+        String v = raw.trim().toLowerCase();
+        if (!v.equals("draft") && !v.equals("submitted")) throw ApiException.badRequest("Invalid submission status: " + raw);
+        return v;
     }
 
     /** Notify every judge and mentor assigned to the team's track that a submission arrived. */
@@ -72,7 +84,14 @@ public class SubmissionService {
     @Transactional
     public SubmissionResponse update(UUID id, UpdateSubmissionRequest req, Authentication auth) {
         Submission s = findOrThrow(id); ensureCanSubmit(s.getTeam(), auth); ensureSubmissionOpen(s.getRound());
-        apply(s, req.repoUrl(), req.demoUrl(), req.slideUrl(), req.reportUrl(), req.apiMetadata(), req.projectName(), req.version(), req.reviewStatus()); return SubmissionMapper.toResponse(s);
+        boolean wasSubmitted = "submitted".equalsIgnoreCase(s.getStatus());
+        apply(s, req.repoUrl(), req.demoUrl(), req.slideUrl(), req.reportUrl(), req.apiMetadata(), req.projectName(), req.version(), req.reviewStatus());
+        if (req.status() != null) {
+            String status = normalizeStatus(req.status());
+            s.setStatus(status);
+            if ("submitted".equals(status) && !wasSubmitted) notifyReviewers(s.getRound(), s.getTeam(), s);
+        }
+        return SubmissionMapper.toResponse(s);
     }
     @Transactional public void delete(UUID id) { Submission s = findOrThrow(id); ensureSubmissionOpen(s.getRound()); submissionRepository.delete(s); }
     private Submission findOrThrow(UUID id) { return submissionRepository.findWithRelationsById(id).orElseThrow(() -> ApiException.notFound("Submission not found: " + id)); }

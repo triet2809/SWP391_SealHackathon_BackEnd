@@ -36,6 +36,9 @@ public class Submission {
     @Column(name = "version", length = 50) private String version;
     @Column(name = "review_status", length = 50) private String reviewStatus;
 
+    /** Lifecycle status: "draft" (work in progress) or "submitted" (handed in to reviewers). */
+    @Column(name = "status", length = 20, nullable = false) private String status;
+
     @CreationTimestamp @Column(name = "submitted_at", nullable = false, updatable = false)
     private LocalDateTime submittedAt;
 

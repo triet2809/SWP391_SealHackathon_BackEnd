@@ -20,6 +20,7 @@ public final class SubmissionMapper {
                 .projectName(s.getProjectName())
                 .version(s.getVersion())
                 .reviewStatus(s.getReviewStatus())
+                .status(s.getStatus())
                 .submittedAt(s.getSubmittedAt())
                 .updatedAt(s.getUpdatedAt())
                 .build();

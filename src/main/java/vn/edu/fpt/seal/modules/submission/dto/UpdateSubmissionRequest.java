@@ -11,5 +11,6 @@ public record UpdateSubmissionRequest(
         @Size(max = 10000) String apiMetadata,
         @Size(max = 255) String projectName,
         @Size(max = 50) String version,
-        @Size(max = 50) String reviewStatus
+        @Size(max = 50) String reviewStatus,
+        @Size(max = 20) String status
 ) {}

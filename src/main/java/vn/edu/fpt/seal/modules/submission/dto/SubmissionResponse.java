@@ -20,6 +20,7 @@ public record SubmissionResponse(
         String projectName,
         String version,
         String reviewStatus,
+        String status,
         LocalDateTime submittedAt,
         LocalDateTime updatedAt
 ) {}

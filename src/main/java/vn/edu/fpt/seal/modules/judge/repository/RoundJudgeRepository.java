@@ -24,7 +24,7 @@ public interface RoundJudgeRepository extends JpaRepository<RoundJudge, UUID> {
             join rounds r on r.id = rj.round_id
             join submissions s on s.round_id = r.id
             join teams t on t.id = s.team_id
-            where rj.user_id = :judgeId
+            where rj.user_id = :judgeId and s.status = 'submitted'
             union
             select tj.id as roundJudgeId, tj.user_id as judgeId, r.id as roundId, r.name as roundName,
                    t.id as teamId, t.name as teamName, s.id as submissionId, s.submitted_at as submittedAt
@@ -32,7 +32,7 @@ public interface RoundJudgeRepository extends JpaRepository<RoundJudge, UUID> {
             join teams t on t.track_id = tj.track_id
             join submissions s on s.team_id = t.id
             join rounds r on r.id = s.round_id
-            where tj.user_id = :judgeId
+            where tj.user_id = :judgeId and s.status = 'submitted'
             order by submittedAt asc, teamName asc
             """, nativeQuery = true)
     List<JudgeSubmissionRow> findSubmissionRowsForJudge(@Param("judgeId") UUID judgeId);
