@@ -16,6 +16,8 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
 
     Page<Team> findByTrackId(UUID trackId, Pageable pageable);
 
+    long countByTrackId(UUID trackId);
+
     boolean existsByTrackIdAndNameIgnoreCase(UUID trackId, String name);
 
     @EntityGraph(attributePaths = {"track", "track.event"})

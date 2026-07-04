@@ -16,6 +16,7 @@ import vn.edu.fpt.seal.modules.track.dto.UpdateTrackRequest;
 import vn.edu.fpt.seal.modules.track.entity.Track;
 import vn.edu.fpt.seal.modules.track.mapper.TrackMapper;
 import vn.edu.fpt.seal.modules.track.repository.TrackRepository;
+import vn.edu.fpt.seal.modules.team.repository.TeamRepository;
 
 import java.util.UUID;
 
@@ -26,21 +27,26 @@ public class TrackService {
 
     private final TrackRepository trackRepository;
     private final EventRepository eventRepository;
+    private final TeamRepository teamRepository;
 
     @Transactional(readOnly = true)
     public Page<TrackResponse> listByEvent(UUID eventId, Pageable pageable) {
         if (eventId == null) {
-            return trackRepository.findAll(pageable).map(TrackMapper::toResponse);
+            return trackRepository.findAll(pageable).map(this::toResponseWithCount);
         }
         if (!eventRepository.existsById(eventId)) {
             throw ApiException.notFound("Event not found: " + eventId);
         }
-        return trackRepository.findByEventId(eventId, pageable).map(TrackMapper::toResponse);
+        return trackRepository.findByEventId(eventId, pageable).map(this::toResponseWithCount);
     }
 
     @Transactional(readOnly = true)
     public TrackResponse get(UUID id) {
-        return TrackMapper.toResponse(findOrThrow(id));
+        return toResponseWithCount(findOrThrow(id));
+    }
+
+    private TrackResponse toResponseWithCount(Track t) {
+        return TrackMapper.toResponse(t, teamRepository.countByTrackId(t.getId()));
     }
 
     @Transactional
@@ -61,10 +67,11 @@ public class TrackService {
                 .event(event)
                 .name(name)
                 .description(req.description())
+                .maxTeams(req.maxTeams())
                 .build();
         t = trackRepository.save(t);
-        log.info("Track created: id={}, event={}, name={}", t.getId(), event.getId(), name);
-        return TrackMapper.toResponse(t);
+        log.info("Track created: id={}, event={}, name={}, maxTeams={}", t.getId(), event.getId(), name, req.maxTeams());
+        return toResponseWithCount(t);
     }
 
     @Transactional
@@ -85,7 +92,15 @@ public class TrackService {
         if (req.description() != null) {
             t.setDescription(req.description());
         }
-        return TrackMapper.toResponse(t);
+        if (req.maxTeams() != null) {
+            // Reject a cap below the number of teams already registered.
+            long current = teamRepository.countByTrackId(t.getId());
+            if (req.maxTeams() < current) {
+                throw ApiException.badRequest("maxTeams (" + req.maxTeams() + ") cannot be less than the " + current + " team(s) already in this track");
+            }
+            t.setMaxTeams(req.maxTeams());
+        }
+        return toResponseWithCount(t);
     }
 
     @Transactional

@@ -28,6 +28,8 @@ public class TeamController {
     public ResponseEntity<List<TeamResponse>> myTeams(Authentication auth) { return ResponseEntity.ok(teamService.myTeams(auth)); }
     @PostMapping("/join") @PreAuthorize("isAuthenticated()") @Operation(summary = "Join team by invite code")
     public ResponseEntity<TeamResponse> join(@Valid @RequestBody JoinTeamRequest req, Authentication auth) { return ResponseEntity.ok(teamService.joinByInviteCode(req, auth)); }
+    @PostMapping("/{id}/leave") @PreAuthorize("isAuthenticated()") @Operation(summary = "Leave your team; promotes a new leader or deletes the team if empty")
+    public ResponseEntity<TeamResponse> leave(@PathVariable UUID id, Authentication auth) { return ResponseEntity.ok(teamService.leaveTeam(id, auth)); }
     @GetMapping("/{id}") @PreAuthorize("isAuthenticated()") @Operation(summary = "Get team by id")
     public ResponseEntity<TeamResponse> get(@PathVariable UUID id) { return ResponseEntity.ok(teamService.get(id)); }
     @PostMapping @PreAuthorize("isAuthenticated()") @Operation(summary = "Create team (coordinator, or a team leader self-creating)")

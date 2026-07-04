@@ -11,6 +11,8 @@ public record TrackResponse(
         UUID eventId,
         String name,
         String description,
+        Integer maxTeams,
+        Long teamCount,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {

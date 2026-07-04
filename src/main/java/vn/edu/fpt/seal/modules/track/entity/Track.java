@@ -23,4 +23,8 @@ public class Track extends BaseEntity {
 
     @Column(name = "description", columnDefinition = "text")
     private String description;
+
+    /** Optional cap on how many teams may register into this track. NULL = unlimited. */
+    @Column(name = "max_teams")
+    private Integer maxTeams;
 }

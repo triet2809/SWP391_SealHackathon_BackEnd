@@ -9,11 +9,17 @@ public final class TrackMapper {
     }
 
     public static TrackResponse toResponse(Track t) {
+        return toResponse(t, null);
+    }
+
+    public static TrackResponse toResponse(Track t, Long teamCount) {
         return TrackResponse.builder()
                 .id(t.getId())
                 .eventId(t.getEvent().getId())
                 .name(t.getName())
                 .description(t.getDescription())
+                .maxTeams(t.getMaxTeams())
+                .teamCount(teamCount)
                 .createdAt(t.getCreatedAt())
                 .updatedAt(t.getUpdatedAt())
                 .build();

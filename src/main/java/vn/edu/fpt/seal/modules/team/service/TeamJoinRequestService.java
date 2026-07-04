@@ -12,6 +12,7 @@ import vn.edu.fpt.seal.modules.team.entity.*;
 import vn.edu.fpt.seal.modules.team.repository.*;
 import vn.edu.fpt.seal.modules.user.entity.User;
 import vn.edu.fpt.seal.modules.user.repository.UserRepository;
+import vn.edu.fpt.seal.modules.notification.service.NotificationService;
 import vn.edu.fpt.seal.security.CurrentUser;
 
 import java.time.LocalDateTime;
@@ -29,6 +30,7 @@ public class TeamJoinRequestService {
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     /** A student requests to join a team. */
     @Transactional
@@ -46,6 +48,12 @@ public class TeamJoinRequestService {
                 .message(req.message() == null ? null : req.message().trim())
                 .build());
         log.info("Join request created: team={}, user={}", team.getId(), callerId);
+        // Notify the team leader that someone wants to join.
+        UUID leaderId = leaderIdOf(team.getId());
+        notificationService.emit(leaderId, "JOIN_REQUEST", "join_requests",
+                "Yêu cầu tham gia team mới",
+                (caller.getFullName() == null ? caller.getEmail() : caller.getFullName()) + " muốn tham gia " + team.getName(),
+                "team", team.getId());
         return toResponse(saved);
     }
 
@@ -80,9 +88,13 @@ public class TeamJoinRequestService {
         }
         if (teamMemberRepository.countByTeamId(team.getId()) >= MAX_TEAM_SIZE) throw ApiException.badRequest("Team is already full");
         if (r.getUser().getStatus() != AccountStatus.approved) throw ApiException.badRequest("Only approved users can join teams");
+        ensureNotInSameTerm(r.getUser().getId(), team);
         teamMemberRepository.save(TeamMember.builder().team(team).user(r.getUser()).role(TeamMemberRole.member).build());
         r.setStatus("accepted"); r.setRespondedAt(LocalDateTime.now());
         log.info("Join request accepted: team={}, user={}", team.getId(), r.getUser().getId());
+        notificationService.emit(r.getUser().getId(), "JOIN_REQUEST_ACCEPTED", "my_requests",
+                "Yêu cầu tham gia được chấp nhận",
+                "Bạn đã được nhận vào team " + team.getName(), "team", team.getId());
         return toResponse(r);
     }
 
@@ -93,6 +105,9 @@ public class TeamJoinRequestService {
         ensureLeaderOrCoordinator(r.getTeam().getId(), auth);
         if (!"pending".equals(r.getStatus())) throw ApiException.badRequest("Request is not pending (current: " + r.getStatus() + ")");
         r.setStatus("rejected"); r.setRespondedAt(LocalDateTime.now());
+        notificationService.emit(r.getUser().getId(), "JOIN_REQUEST_REJECTED", "my_requests",
+                "Yêu cầu tham gia bị từ chối",
+                "Yêu cầu tham gia team " + r.getTeam().getName() + " đã bị từ chối", "team", r.getTeam().getId());
         return toResponse(r);
     }
 
@@ -111,6 +126,21 @@ public class TeamJoinRequestService {
         if (s != EventStatus.published) throw ApiException.badRequest("Registration is not open for this event (status: " + s + ")");
     }
 
+    /** One event per term: block accepting a user already on an active team in another same-term event. */
+    private void ensureNotInSameTerm(UUID userId, Team targetTeam) {
+        String term = targetTeam.getTrack().getEvent().getTerm();
+        if (term == null || term.isBlank()) return;
+        UUID targetEventId = targetTeam.getTrack().getEvent().getId();
+        for (TeamMember m : teamMemberRepository.findByUserIdOrderByJoinedAtDesc(userId)) {
+            Team t = m.getTeam();
+            if (t.getStatus() != TeamStatus.active) continue;
+            var ev = t.getTrack().getEvent();
+            if (ev.getId().equals(targetEventId)) continue;
+            if (term.equalsIgnoreCase(ev.getTerm()))
+                throw ApiException.badRequest("This user is already in a team for another event this term (" + ev.getTitle() + ")");
+        }
+    }
+
     private void ensureLeaderOrCoordinator(UUID teamId, Authentication auth) {
         if (isCoordinator(auth)) return;
         UUID callerId = currentUserId(auth);
@@ -126,6 +156,13 @@ public class TeamJoinRequestService {
     private UUID currentUserId(Authentication auth) {
         if (auth != null && auth.getPrincipal() instanceof CurrentUser c) return c.getId();
         throw ApiException.forbidden("Authentication required");
+    }
+
+    private UUID leaderIdOf(UUID teamId) {
+        return teamMemberRepository.findByTeamIdOrderByRoleAscJoinedAtAsc(teamId).stream()
+                .filter(m -> m.getRole() == TeamMemberRole.leader)
+                .map(m -> m.getUser().getId())
+                .findFirst().orElse(null);
     }
 
     private static JoinRequestResponse toResponse(TeamJoinRequest r) {

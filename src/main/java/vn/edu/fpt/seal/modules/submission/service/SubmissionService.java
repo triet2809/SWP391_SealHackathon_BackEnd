@@ -19,8 +19,14 @@ import vn.edu.fpt.seal.modules.submission.repository.SubmissionRepository;
 import vn.edu.fpt.seal.modules.team.entity.Team;
 import vn.edu.fpt.seal.modules.team.repository.TeamMemberRepository;
 import vn.edu.fpt.seal.modules.team.repository.TeamRepository;
+import vn.edu.fpt.seal.modules.judge.repository.TrackJudgeRepository;
+import vn.edu.fpt.seal.modules.mentor.repository.TrackMentorRepository;
+import vn.edu.fpt.seal.modules.notification.service.NotificationService;
 import vn.edu.fpt.seal.security.CurrentUser;
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -31,6 +37,9 @@ public class SubmissionService {
     private final RoundRepository roundRepository;
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
+    private final TrackJudgeRepository trackJudgeRepository;
+    private final TrackMentorRepository trackMentorRepository;
+    private final NotificationService notificationService;
     @Transactional(readOnly = true)
     public Page<SubmissionResponse> list(UUID roundId, UUID teamId, UUID trackId, Pageable pageable) {
         return submissionRepository.search(roundId, teamId, trackId, pageable).map(SubmissionMapper::toResponse);
@@ -45,7 +54,20 @@ public class SubmissionService {
         apply(s, req.repoUrl(), req.demoUrl(), req.slideUrl(), req.reportUrl(), req.apiMetadata(), req.projectName(), req.version(), req.reviewStatus());
         s = submissionRepository.save(s);
         log.info("Submission upserted: id={}, round={}, team={}", s.getId(), round.getId(), team.getId());
+        notifyReviewers(round, team, s);
         return SubmissionMapper.toResponse(s);
+    }
+
+    /** Notify every judge and mentor assigned to the team's track that a submission arrived. */
+    private void notifyReviewers(Round round, Team team, Submission s) {
+        UUID trackId = team.getTrack().getId();
+        List<UUID> recipients = new ArrayList<>();
+        trackJudgeRepository.findByTrackId(trackId, Pageable.unpaged()).forEach(tj -> recipients.add(tj.getUser().getId()));
+        trackMentorRepository.findByTrackId(trackId, Pageable.unpaged()).forEach(tm -> recipients.add(tm.getUser().getId()));
+        notificationService.emitAll(recipients, "SUBMISSION", "submissions",
+                "Bài nộp mới",
+                team.getName() + " vừa nộp bài ở vòng " + round.getName(),
+                "submission", s.getId());
     }
     @Transactional
     public SubmissionResponse update(UUID id, UpdateSubmissionRequest req, Authentication auth) {

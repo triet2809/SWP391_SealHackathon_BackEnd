@@ -62,6 +62,7 @@ public class TeamService {
         Track track = trackRepository.findById(req.trackId()).orElseThrow(() -> ApiException.notFound("Track not found: " + req.trackId()));
         ensureEditable(track);
         ensureRegistrationOpen(track);
+        ensureTrackHasCapacity(track);
         String name = req.name().trim();
         if (teamRepository.existsByTrackIdAndNameIgnoreCase(track.getId(), name)) throw ApiException.conflict("Team name already exists in this track");
 
@@ -82,6 +83,7 @@ public class TeamService {
             // invite code or accepted join requests. Minimum size is enforced at a
             // later gate (registration close / submission), not at creation time.
             UUID callerId = currentUserId(auth);
+            ensureNotInSameTerm(callerId, track);
             addMemberInternal(team, callerId, TeamMemberRole.leader); added.add(callerId);
             if (req.memberUserIds() != null) for (UUID id : req.memberUserIds()) if (added.add(id)) addMemberInternal(team, id, TeamMemberRole.member);
             for (UUID mid : resolveEmails(req.memberEmails())) if (added.add(mid)) addMemberInternal(team, mid, TeamMemberRole.member);
@@ -155,6 +157,7 @@ public class TeamService {
         ensureEditable(team.getTrack());
         ensureRegistrationOpen(team.getTrack());
         if (teamMemberRepository.existsByTeamIdAndUserId(team.getId(), callerId)) return toResponse(team);
+        ensureNotInSameTerm(callerId, team.getTrack());
         if (teamMemberRepository.countByTeamId(team.getId()) >= MAX_TEAM_SIZE) throw ApiException.badRequest("A team can have at most " + MAX_TEAM_SIZE + " members");
         addMemberInternal(team, callerId, TeamMemberRole.member);
         return toResponse(team);
@@ -174,6 +177,41 @@ public class TeamService {
         Team team = findOrThrow(teamId); ensureEditable(team.getTrack());
         TeamMember member = teamMemberRepository.findByTeamIdAndUserId(teamId, userId).orElseThrow(() -> ApiException.notFound("Team member not found"));
         teamMemberRepository.delete(member);
+    }
+
+    /**
+     * A user leaves their own team while registration is still open. If the leader
+     * leaves, leadership is handed to the earliest-joined remaining member; if no
+     * members remain, the (now empty) team is deleted.
+     * Returns the updated team, or null when the team was deleted.
+     */
+    @Transactional
+    public TeamResponse leaveTeam(UUID teamId, Authentication auth) {
+        UUID callerId = currentUserId(auth);
+        Team team = findOrThrow(teamId);
+        ensureRegistrationOpen(team.getTrack());
+        TeamMember me = teamMemberRepository.findByTeamIdAndUserId(teamId, callerId)
+                .orElseThrow(() -> ApiException.badRequest("You are not a member of this team"));
+        boolean wasLeader = me.getRole() == TeamMemberRole.leader;
+        teamMemberRepository.delete(me);
+        teamMemberRepository.flush();
+
+        List<TeamMember> remaining = teamMemberRepository.findByTeamIdOrderByRoleAscJoinedAtAsc(teamId);
+        if (remaining.isEmpty()) {
+            // Last person out: remove the empty team entirely.
+            teamRepository.delete(team);
+            log.info("Team {} deleted: last member {} left", teamId, callerId);
+            return null;
+        }
+        if (wasLeader) {
+            // Promote the earliest-joined remaining member to leader.
+            TeamMember next = remaining.stream()
+                    .min(java.util.Comparator.comparing(TeamMember::getJoinedAt))
+                    .orElse(remaining.get(0));
+            next.setRole(TeamMemberRole.leader);
+            log.info("Team {} leadership transferred to {} after leader {} left", teamId, next.getUser().getId(), callerId);
+        }
+        return toResponse(team);
     }
 
     @Transactional
@@ -205,6 +243,34 @@ public class TeamService {
         return teamMemberRepository.save(TeamMember.builder().team(team).user(user).role(role).build());
     }
     private void ensureEditable(Track track) { EventStatus s = track.getEvent().getStatus(); if (s == EventStatus.completed || s == EventStatus.cancelled) throw ApiException.badRequest("Cannot edit teams in event status " + s); }
+
+    /** A track may cap how many teams register into it (track.maxTeams). NULL = unlimited. */
+    private void ensureTrackHasCapacity(Track track) {
+        Integer max = track.getMaxTeams();
+        if (max != null && teamRepository.countByTrackId(track.getId()) >= max) {
+            throw ApiException.badRequest("Track is full (" + max + " teams max)");
+        }
+    }
+
+    /**
+     * A user may only take part in one event per term. Blocks joining/creating a team
+     * when the user already belongs to an active team in a DIFFERENT event that shares
+     * the same (non-blank) term.
+     */
+    private void ensureNotInSameTerm(UUID userId, Track targetTrack) {
+        String term = targetTrack.getEvent().getTerm();
+        if (term == null || term.isBlank()) return; // cannot compare without a term
+        UUID targetEventId = targetTrack.getEvent().getId();
+        for (TeamMember m : teamMemberRepository.findByUserIdOrderByJoinedAtDesc(userId)) {
+            Team t = m.getTeam();
+            if (t.getStatus() != TeamStatus.active) continue;
+            var ev = t.getTrack().getEvent();
+            if (ev.getId().equals(targetEventId)) continue; // same event is fine
+            if (term.equalsIgnoreCase(ev.getTerm())) {
+                throw ApiException.badRequest("You are already in a team for another event this term (" + ev.getTitle() + ")");
+            }
+        }
+    }
     /** Team registration (create/join) is only allowed while the event has registration open (status=published). */
     private void ensureRegistrationOpen(Track track) { EventStatus s = track.getEvent().getStatus(); if (s != EventStatus.published) throw ApiException.badRequest("Registration is not open for this event (status: " + s + ")"); }
     private void ensureDraft(Track track) { EventStatus s = track.getEvent().getStatus(); if (s != EventStatus.draft) throw ApiException.badRequest("Teams can only be deleted while event is draft (current: " + s + ")"); }
