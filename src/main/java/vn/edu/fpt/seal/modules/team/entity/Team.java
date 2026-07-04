@@ -32,4 +32,8 @@ public class Team extends BaseEntity {
 
     @Column(name = "disqualified_reason", columnDefinition = "text")
     private String disqualifiedReason;
+
+    /** Short human-friendly invite code (6 chars) used to join the team. */
+    @Column(name = "invite_code", length = 12, unique = true)
+    private String inviteCode;
 }

@@ -19,6 +19,11 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     boolean existsByTrackIdAndNameIgnoreCase(UUID trackId, String name);
 
     @EntityGraph(attributePaths = {"track", "track.event"})
+    Optional<Team> findByInviteCodeIgnoreCase(String inviteCode);
+
+    boolean existsByInviteCode(String inviteCode);
+
+    @EntityGraph(attributePaths = {"track", "track.event"})
     Optional<Team> findWithTrackById(UUID id);
 
     long countByTrackEventId(UUID eventId);

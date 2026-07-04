@@ -18,6 +18,7 @@ public final class TeamMapper {
                 .trackId(team.getTrack().getId())
                 .eventId(team.getTrack().getEvent().getId())
                 .name(team.getName())
+                .inviteCode(team.getInviteCode())
                 .status(team.getStatus())
                 .disqualifiedReason(team.getDisqualifiedReason())
                 .members(members.stream().map(TeamMapper::toMemberResponse).toList())

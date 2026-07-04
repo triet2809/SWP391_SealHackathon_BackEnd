@@ -66,7 +66,7 @@ public class TeamService {
         if (teamRepository.existsByTrackIdAndNameIgnoreCase(track.getId(), name)) throw ApiException.conflict("Team name already exists in this track");
 
         boolean coordinator = isCoordinator(auth);
-        Team team = teamRepository.save(Team.builder().track(track).name(name).status(TeamStatus.active).build());
+        Team team = teamRepository.save(Team.builder().track(track).name(name).status(TeamStatus.active).inviteCode(generateInviteCode()).build());
         Set<UUID> added = new LinkedHashSet<>();
 
         if (coordinator) {
@@ -74,18 +74,44 @@ public class TeamService {
             // (they can build the roster incrementally). Hard cap at MAX_TEAM_SIZE.
             if (req.leaderUserId() != null) { addMemberInternal(team, req.leaderUserId(), TeamMemberRole.leader); added.add(req.leaderUserId()); }
             if (req.memberUserIds() != null) for (UUID id : req.memberUserIds()) if (added.add(id)) addMemberInternal(team, id, TeamMemberRole.member);
+            for (UUID mid : resolveEmails(req.memberEmails())) if (added.add(mid)) addMemberInternal(team, mid, TeamMemberRole.member);
             if (added.size() > MAX_TEAM_SIZE) throw ApiException.badRequest("A team can have at most " + MAX_TEAM_SIZE + " members");
         } else {
             // A regular (non-coordinator) user creating their own team becomes the
-            // leader. Self-organised teams must satisfy the 3-5 size rule up front.
+            // leader. Solo creation is allowed (size 1); the roster grows later via
+            // invite code or accepted join requests. Minimum size is enforced at a
+            // later gate (registration close / submission), not at creation time.
             UUID callerId = currentUserId(auth);
             addMemberInternal(team, callerId, TeamMemberRole.leader); added.add(callerId);
             if (req.memberUserIds() != null) for (UUID id : req.memberUserIds()) if (added.add(id)) addMemberInternal(team, id, TeamMemberRole.member);
-            if (added.size() < MIN_TEAM_SIZE || added.size() > MAX_TEAM_SIZE)
-                throw ApiException.badRequest("A self-created team must have between " + MIN_TEAM_SIZE + " and " + MAX_TEAM_SIZE + " members (including the leader)");
+            for (UUID mid : resolveEmails(req.memberEmails())) if (added.add(mid)) addMemberInternal(team, mid, TeamMemberRole.member);
+            if (added.size() > MAX_TEAM_SIZE)
+                throw ApiException.badRequest("A team can have at most " + MAX_TEAM_SIZE + " members (including the leader)");
         }
         log.info("Team created: id={}, track={}, name={}, byCoordinator={}", team.getId(), track.getId(), team.getName(), coordinator);
         return toResponse(team);
+    }
+
+    /** Resolve member emails to user ids; each must be an existing registered user. */
+    private List<UUID> resolveEmails(List<String> emails) {
+        if (emails == null) return List.of();
+        List<UUID> ids = new ArrayList<>();
+        for (String raw : emails) {
+            if (raw == null || raw.isBlank()) continue;
+            String email = raw.toLowerCase().trim();
+            User u = userRepository.findByEmail(email).orElseThrow(() -> ApiException.badRequest("No registered user with email: " + email));
+            ids.add(u.getId());
+        }
+        return ids;
+    }
+
+    /** Generate a unique 6-char uppercase invite code. */
+    private String generateInviteCode() {
+        for (int attempt = 0; attempt < 10; attempt++) {
+            String code = UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase();
+            if (!teamRepository.existsByInviteCode(code)) return code;
+        }
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
     }
 
     @Transactional
@@ -123,10 +149,8 @@ public class TeamService {
     @Transactional
     public TeamResponse joinByInviteCode(JoinTeamRequest req, Authentication auth) {
         UUID callerId = currentUserId(auth);
-        String code = req.inviteCode().trim().toLowerCase().replace("seal-", "").replace("-", "");
-        Team team = teamRepository.findAll().stream()
-                .filter(t -> t.getId().toString().replace("-", "").toLowerCase().startsWith(code))
-                .findFirst()
+        String code = req.inviteCode().trim().toUpperCase().replace("SEAL-", "").replace("-", "");
+        Team team = teamRepository.findByInviteCodeIgnoreCase(code)
                 .orElseThrow(() -> ApiException.notFound("Team invite code not found"));
         ensureEditable(team.getTrack());
         ensureRegistrationOpen(team.getTrack());

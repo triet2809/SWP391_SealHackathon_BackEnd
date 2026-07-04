@@ -13,6 +13,7 @@ public record TeamResponse(
         UUID trackId,
         UUID eventId,
         String name,
+        String inviteCode,
         TeamStatus status,
         String disqualifiedReason,
         List<TeamMemberResponse> members,

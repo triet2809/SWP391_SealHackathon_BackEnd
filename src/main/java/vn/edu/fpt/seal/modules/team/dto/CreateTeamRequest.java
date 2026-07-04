@@ -11,6 +11,9 @@ public record CreateTeamRequest(
         @NotNull UUID trackId,
         @NotBlank @Size(max = 255) String name,
         UUID leaderUserId,
-        List<UUID> memberUserIds
+        List<UUID> memberUserIds,
+        // Optional member emails (self-service create-team form). Each must be an
+        // existing approved user. Combined with leader, total must stay within 1-5.
+        List<@Size(max = 255) String> memberEmails
 ) {
 }
