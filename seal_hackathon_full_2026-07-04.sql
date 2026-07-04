@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict I8SyLcPTOcQBSc1gK1ceBGFDalv9rCHETHdY4urIkrx2KaA9qhJXFdHvdM3JV8A
+\restrict Z2DjoQ6Yg0122TfIdRwEqkE2b6OyroekmixLFuQosHhP0wuXPLeqBHMMeV6pZDh
 
 -- Dumped from database version 17.10 (Homebrew)
 -- Dumped by pg_dump version 17.10 (Homebrew)
@@ -398,6 +398,27 @@ CREATE TABLE public.notices (
 ALTER TABLE public.notices OWNER TO postgres;
 
 --
+-- Name: notifications; Type: TABLE; Schema: public; Owner: mac
+--
+
+CREATE TABLE public.notifications (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    type character varying(40) NOT NULL,
+    title character varying(255) NOT NULL,
+    body text,
+    category character varying(40) NOT NULL,
+    ref_type character varying(40),
+    ref_id uuid,
+    read_at timestamp without time zone,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE public.notifications OWNER TO mac;
+
+--
 -- Name: prizes; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -710,7 +731,8 @@ CREATE TABLE public.tracks (
     name character varying(255) NOT NULL,
     description text,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    max_teams integer
 );
 
 
@@ -915,6 +937,14 @@ a2010f6a-1dca-4fbf-a842-03731fb9eead	probe	probe body	normal	all	\N	\N	b9debf4b-
 
 
 --
+-- Data for Name: notifications; Type: TABLE DATA; Schema: public; Owner: mac
+--
+
+COPY public.notifications (id, user_id, type, title, body, category, ref_type, ref_id, read_at, created_at, updated_at) FROM stdin;
+\.
+
+
+--
 -- Data for Name: prizes; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1099,19 +1129,19 @@ COPY public.track_mentors (id, event_id, track_id, user_id, assigned_at) FROM st
 -- Data for Name: tracks; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.tracks (id, event_id, name, description, created_at, updated_at) FROM stdin;
-082553c7-dbed-4cb2-9629-0401e9fd3a7d	9b42520a-bce1-45ac-a165-73aa556d8c82	Regression Track 232026	track smoke	2026-07-02 16:20:26.434699	2026-07-02 16:20:26.434699
-118d1506-a833-4a9f-877f-58b3bf4b3772	9b42520a-bce1-45ac-a165-73aa556d8c82	AI	hihi	2026-07-02 17:42:42.759141	2026-07-02 17:42:42.759141
-e18a5239-caf9-4997-8c11-e0bea2ca0f6e	9b42520a-bce1-45ac-a165-73aa556d8c82	Track B		2026-07-03 17:19:59.216462	2026-07-03 17:19:59.216462
-43e9e14d-0aaa-4d66-a75c-5a8575d386a1	9b42520a-bce1-45ac-a165-73aa556d8c82	E2ETrack97205		2026-07-03 17:19:59.216462	2026-07-03 17:19:59.216462
-cf4b4453-06e5-482f-b2a3-6a9a06ef7626	9b42520a-bce1-45ac-a165-73aa556d8c82	E2ETrack799		2026-07-03 17:23:22.841017	2026-07-03 17:23:22.841017
-00fbb79f-0891-49d4-b98f-4de4731a7797	9b42520a-bce1-45ac-a165-73aa556d8c82	E2ETrack63357		2026-07-03 17:27:45.361287	2026-07-03 17:27:45.361287
-5f8a2671-e573-4efa-b565-0ef8d54f1bcd	9b42520a-bce1-45ac-a165-73aa556d8c82	E2ETrack49308		2026-07-03 17:32:31.315856	2026-07-03 17:32:31.315856
-4c316b7d-9963-467b-87c7-e70baa547992	50bea8c3-e782-4e59-a694-549fe42020bd	LOGICTrack2713	logic track	2026-07-03 17:48:24.324472	2026-07-03 17:48:24.324472
-d892f925-3347-4f5e-890b-dc7ca7558e33	a6ec61f7-2f7e-4d77-86d5-861a62fc060c	Track C		2026-07-03 18:05:46.300584	2026-07-03 18:05:46.300584
-723f83f1-3b0f-4197-9206-b576562963a7	a6ec61f7-2f7e-4d77-86d5-861a62fc060c	Track A		2026-07-03 18:05:46.300584	2026-07-03 18:05:46.300584
-4d95ca60-30fa-4603-8f56-b0290da7829a	a6ec61f7-2f7e-4d77-86d5-861a62fc060c	Track B		2026-07-03 18:05:46.300584	2026-07-03 18:05:46.300584
-2421b5c6-9184-4176-b9b0-a253093b04b3	a6ec61f7-2f7e-4d77-86d5-861a62fc060c	General	Default track for registered teams	2026-07-04 01:37:26.358939	2026-07-04 01:37:26.358939
+COPY public.tracks (id, event_id, name, description, created_at, updated_at, max_teams) FROM stdin;
+082553c7-dbed-4cb2-9629-0401e9fd3a7d	9b42520a-bce1-45ac-a165-73aa556d8c82	Regression Track 232026	track smoke	2026-07-02 16:20:26.434699	2026-07-02 16:20:26.434699	\N
+118d1506-a833-4a9f-877f-58b3bf4b3772	9b42520a-bce1-45ac-a165-73aa556d8c82	AI	hihi	2026-07-02 17:42:42.759141	2026-07-02 17:42:42.759141	\N
+e18a5239-caf9-4997-8c11-e0bea2ca0f6e	9b42520a-bce1-45ac-a165-73aa556d8c82	Track B		2026-07-03 17:19:59.216462	2026-07-03 17:19:59.216462	\N
+43e9e14d-0aaa-4d66-a75c-5a8575d386a1	9b42520a-bce1-45ac-a165-73aa556d8c82	E2ETrack97205		2026-07-03 17:19:59.216462	2026-07-03 17:19:59.216462	\N
+cf4b4453-06e5-482f-b2a3-6a9a06ef7626	9b42520a-bce1-45ac-a165-73aa556d8c82	E2ETrack799		2026-07-03 17:23:22.841017	2026-07-03 17:23:22.841017	\N
+00fbb79f-0891-49d4-b98f-4de4731a7797	9b42520a-bce1-45ac-a165-73aa556d8c82	E2ETrack63357		2026-07-03 17:27:45.361287	2026-07-03 17:27:45.361287	\N
+5f8a2671-e573-4efa-b565-0ef8d54f1bcd	9b42520a-bce1-45ac-a165-73aa556d8c82	E2ETrack49308		2026-07-03 17:32:31.315856	2026-07-03 17:32:31.315856	\N
+4c316b7d-9963-467b-87c7-e70baa547992	50bea8c3-e782-4e59-a694-549fe42020bd	LOGICTrack2713	logic track	2026-07-03 17:48:24.324472	2026-07-03 17:48:24.324472	\N
+d892f925-3347-4f5e-890b-dc7ca7558e33	a6ec61f7-2f7e-4d77-86d5-861a62fc060c	Track C		2026-07-03 18:05:46.300584	2026-07-03 18:05:46.300584	\N
+723f83f1-3b0f-4197-9206-b576562963a7	a6ec61f7-2f7e-4d77-86d5-861a62fc060c	Track A		2026-07-03 18:05:46.300584	2026-07-03 18:05:46.300584	\N
+4d95ca60-30fa-4603-8f56-b0290da7829a	a6ec61f7-2f7e-4d77-86d5-861a62fc060c	Track B		2026-07-03 18:05:46.300584	2026-07-03 18:05:46.300584	\N
+2421b5c6-9184-4176-b9b0-a253093b04b3	a6ec61f7-2f7e-4d77-86d5-861a62fc060c	General	Default track for registered teams	2026-07-04 01:37:26.358939	2026-07-04 01:37:26.358939	\N
 \.
 
 
@@ -1227,6 +1257,14 @@ ALTER TABLE ONLY public.mentor_feedbacks
 
 ALTER TABLE ONLY public.notices
     ADD CONSTRAINT notices_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: notifications notifications_pkey; Type: CONSTRAINT; Schema: public; Owner: mac
+--
+
+ALTER TABLE ONLY public.notifications
+    ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
 
 
 --
@@ -1647,6 +1685,20 @@ CREATE INDEX idx_notices_target_role ON public.notices USING btree (target_role)
 --
 
 CREATE INDEX idx_notices_target_track_id ON public.notices USING btree (target_track_id);
+
+
+--
+-- Name: idx_notifications_user; Type: INDEX; Schema: public; Owner: mac
+--
+
+CREATE INDEX idx_notifications_user ON public.notifications USING btree (user_id);
+
+
+--
+-- Name: idx_notifications_user_unread; Type: INDEX; Schema: public; Owner: mac
+--
+
+CREATE INDEX idx_notifications_user_unread ON public.notifications USING btree (user_id, category) WHERE (read_at IS NULL);
 
 
 --
@@ -2182,6 +2234,14 @@ ALTER TABLE ONLY public.notices
 
 
 --
+-- Name: notifications notifications_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mac
+--
+
+ALTER TABLE ONLY public.notifications
+    ADD CONSTRAINT notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: prizes prizes_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2481,5 +2541,5 @@ ALTER TABLE ONLY public.users
 -- PostgreSQL database dump complete
 --
 
-\unrestrict I8SyLcPTOcQBSc1gK1ceBGFDalv9rCHETHdY4urIkrx2KaA9qhJXFdHvdM3JV8A
+\unrestrict Z2DjoQ6Yg0122TfIdRwEqkE2b6OyroekmixLFuQosHhP0wuXPLeqBHMMeV6pZDh
 
