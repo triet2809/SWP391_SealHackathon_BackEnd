@@ -31,4 +31,12 @@ public class Round extends BaseEntity {
 
     @Column(name = "top_n_to_promote", nullable = false)
     private Integer topNToPromote;
+
+    /** Thời điểm EC công bố kết quả vòng thi (mở cửa sổ khiếu nại). NULL = chưa công bố. */
+    @Column(name = "result_published_at")
+    private LocalDateTime resultPublishedAt;
+
+    /** Hạn chót nộp khiếu nại = resultPublishedAt + 15 phút. NULL = chưa mở cửa sổ. */
+    @Column(name = "appeal_deadline")
+    private LocalDateTime appealDeadline;
 }

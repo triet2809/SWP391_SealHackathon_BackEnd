@@ -54,6 +54,29 @@ public interface RoundRankingRepository extends JpaRepository<RoundRanking, UUID
             """)
     List<TeamCriterionScoreRow> criterionScores(@Param("roundId") UUID roundId);
 
+    /**
+     * Số thành viên của từng đội có bài nộp trong vòng — dùng cho tie-break fallback:
+     * khi hòa cả tổng điểm lẫn tiêu chí, đội ÍT thành viên hơn xếp trên.
+     */
+    @Query("""
+            select tm.team.id as teamId, count(tm.id) as memberCount
+            from TeamMember tm
+            where tm.team.id in (select sub.team.id from Submission sub where sub.round.id = :roundId)
+            group by tm.team.id
+            """)
+    List<TeamMemberCountRow> memberCounts(@Param("roundId") UUID roundId);
+
+    /**
+     * Thời điểm nộp bài của từng đội trong vòng — fallback cuối cùng:
+     * đội nộp bài SỚM hơn xếp trên.
+     */
+    @Query("""
+            select sub.team.id as teamId, sub.submittedAt as submittedAt
+            from Submission sub
+            where sub.round.id = :roundId
+            """)
+    List<TeamSubmissionTimeRow> submissionTimes(@Param("roundId") UUID roundId);
+
     interface RoundScoreRow {
         UUID getTeamId();
         BigDecimal getTotalScore();
@@ -66,5 +89,17 @@ public interface RoundRankingRepository extends JpaRepository<RoundRanking, UUID
         String getCriterionName();
         BigDecimal getCriterionWeight();
         BigDecimal getCriterionScore();
+    }
+
+    /** Projection: số thành viên của một đội. */
+    interface TeamMemberCountRow {
+        UUID getTeamId();
+        Long getMemberCount();
+    }
+
+    /** Projection: thời điểm nộp bài của một đội. */
+    interface TeamSubmissionTimeRow {
+        UUID getTeamId();
+        java.time.LocalDateTime getSubmittedAt();
     }
 }

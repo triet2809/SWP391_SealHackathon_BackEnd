@@ -11,10 +11,14 @@ import vn.edu.fpt.seal.common.enums.*;
 import vn.edu.fpt.seal.common.exception.ApiException;
 import vn.edu.fpt.seal.modules.audit.entity.AuditLog;
 import vn.edu.fpt.seal.modules.audit.repository.AuditLogRepository;
+import vn.edu.fpt.seal.modules.rules.entity.RuleAcceptance;
+import vn.edu.fpt.seal.modules.rules.repository.EventRuleRepository;
+import vn.edu.fpt.seal.modules.rules.repository.RuleAcceptanceRepository;
 import vn.edu.fpt.seal.modules.team.dto.*;
 import vn.edu.fpt.seal.modules.team.entity.*;
 import vn.edu.fpt.seal.modules.team.mapper.TeamMapper;
 import vn.edu.fpt.seal.modules.team.repository.*;
+import vn.edu.fpt.seal.modules.teamtimeline.service.TeamTimelineService;
 import vn.edu.fpt.seal.security.CurrentUser;
 import vn.edu.fpt.seal.modules.track.entity.Track;
 import vn.edu.fpt.seal.modules.track.repository.TrackRepository;
@@ -36,6 +40,9 @@ public class TeamService {
     private final TrackRepository trackRepository;
     private final UserRepository userRepository;
     private final AuditLogRepository auditLogRepository;
+    private final TeamTimelineService timelineService;
+    private final EventRuleRepository eventRuleRepository;
+    private final RuleAcceptanceRepository ruleAcceptanceRepository;
 
     @Transactional(readOnly = true)
     public Page<TeamResponse> listByTrack(UUID trackId, Pageable pageable) {
@@ -67,6 +74,8 @@ public class TeamService {
         if (teamRepository.existsByTrackIdAndNameIgnoreCase(track.getId(), name)) throw ApiException.conflict("Team name already exists in this track");
 
         boolean coordinator = isCoordinator(auth);
+        // Thí sinh tự tạo đội phải chấp nhận thể lệ (rule PUBLIC) của sự kiện trước
+        if (!coordinator) ensureRulesAccepted(currentUserId(auth), track, req.acceptedRules());
         Team team = teamRepository.save(Team.builder().track(track).name(name).status(TeamStatus.active).inviteCode(generateInviteCode()).build());
         Set<UUID> added = new LinkedHashSet<>();
 
@@ -90,6 +99,9 @@ public class TeamService {
             if (added.size() > MAX_TEAM_SIZE)
                 throw ApiException.badRequest("A team can have at most " + MAX_TEAM_SIZE + " members (including the leader)");
         }
+        // Ghi mốc "đội được tạo" vào hành trình (timeline) của đội
+        timelineService.record(team, null, TimelineEventType.TEAM_CREATED, "Team created",
+                "Team '" + team.getName() + "' registered in track '" + track.getName() + "'");
         log.info("Team created: id={}, track={}, name={}, byCoordinator={}", team.getId(), track.getId(), team.getName(), coordinator);
         return toResponse(team);
     }
@@ -158,6 +170,8 @@ public class TeamService {
         ensureRegistrationOpen(team.getTrack());
         if (teamMemberRepository.existsByTeamIdAndUserId(team.getId(), callerId)) return toResponse(team);
         ensureNotInSameTerm(callerId, team.getTrack());
+        // Người tham gia đội cũng phải chấp nhận thể lệ của sự kiện
+        ensureRulesAccepted(callerId, team.getTrack(), req.acceptedRules());
         if (teamMemberRepository.countByTeamId(team.getId()) >= MAX_TEAM_SIZE) throw ApiException.badRequest("A team can have at most " + MAX_TEAM_SIZE + " members");
         addMemberInternal(team, callerId, TeamMemberRole.member);
         return toResponse(team);
@@ -222,12 +236,19 @@ public class TeamService {
         team.setDisqualifiedReason(req.reason().trim());
         // Requirement #10: disqualification must leave an audit trail.
         writeAudit(auth, team, AuditAction.DISQUALIFY_TEAM, oldStatus, TeamStatus.disqualified.name(), req.reason().trim());
+        // Ghi mốc "đội bị loại" vào timeline
+        timelineService.record(team, null, TimelineEventType.TEAM_DISQUALIFIED, "Team disqualified",
+                "Reason: " + req.reason().trim(), null, null, TeamStatus.disqualified.name());
         return toResponse(team);
     }
 
     @Transactional
     public TeamResponse reactivate(UUID id) {
-        Team team = findOrThrow(id); team.setStatus(TeamStatus.active); team.setDisqualifiedReason(null); return toResponse(team);
+        Team team = findOrThrow(id); team.setStatus(TeamStatus.active); team.setDisqualifiedReason(null);
+        // Ghi mốc "đội được khôi phục" vào timeline
+        timelineService.record(team, null, TimelineEventType.TEAM_REACTIVATED, "Team reactivated",
+                "Team was reactivated after disqualification", null, null, TeamStatus.active.name());
+        return toResponse(team);
     }
 
     @Transactional
@@ -271,6 +292,23 @@ public class TeamService {
             }
         }
     }
+    /**
+     * Bắt buộc chấp nhận thể lệ (rule PUBLIC) trước khi đăng ký vào sự kiện:
+     * - Sự kiện không có rule PUBLIC nào -> bỏ qua.
+     * - Người dùng đã chấp nhận trước đó -> bỏ qua (idempotent).
+     * - Ngược lại: acceptedRules phải là true, và ghi lại bản ghi chấp nhận.
+     */
+    private void ensureRulesAccepted(UUID userId, Track track, Boolean acceptedRules) {
+        UUID eventId = track.getEvent().getId();
+        if (!eventRuleRepository.existsByEventIdAndVisibility(eventId, RuleVisibility.PUBLIC)) return;
+        if (ruleAcceptanceRepository.existsByUserIdAndEventId(userId, eventId)) return;
+        if (!Boolean.TRUE.equals(acceptedRules)) {
+            throw ApiException.badRequest("You must accept the event rules before registering");
+        }
+        User user = userRepository.findById(userId).orElseThrow(() -> ApiException.notFound("User not found: " + userId));
+        ruleAcceptanceRepository.save(RuleAcceptance.builder().user(user).event(track.getEvent()).build());
+    }
+
     /** Team registration (create/join) is only allowed while the event has registration open (status=published). */
     private void ensureRegistrationOpen(Track track) { EventStatus s = track.getEvent().getStatus(); if (s != EventStatus.published) throw ApiException.badRequest("Registration is not open for this event (status: " + s + ")"); }
     private void ensureDraft(Track track) { EventStatus s = track.getEvent().getStatus(); if (s != EventStatus.draft) throw ApiException.badRequest("Teams can only be deleted while event is draft (current: " + s + ")"); }

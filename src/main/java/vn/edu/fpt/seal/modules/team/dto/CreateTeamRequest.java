@@ -14,6 +14,9 @@ public record CreateTeamRequest(
         List<UUID> memberUserIds,
         // Optional member emails (self-service create-team form). Each must be an
         // existing approved user. Combined with leader, total must stay within 1-5.
-        List<@Size(max = 255) String> memberEmails
+        List<@Size(max = 255) String> memberEmails,
+        // Checkbox "đồng ý với thể lệ sự kiện": bắt buộc = true nếu sự kiện có rule PUBLIC
+        // và người tạo đội (không phải coordinator) chưa từng chấp nhận trước đó.
+        Boolean acceptedRules
 ) {
 }

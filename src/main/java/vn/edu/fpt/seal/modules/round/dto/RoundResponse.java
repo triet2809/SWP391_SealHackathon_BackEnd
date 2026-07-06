@@ -14,6 +14,9 @@ public record RoundResponse(
         Integer sequenceNumber,
         LocalDateTime submissionDeadline,
         Integer topNToPromote,
+        // Thông tin cửa sổ khiếu nại — FE dùng để hiển thị nút khiếu nại + đồng hồ đếm ngược
+        LocalDateTime resultPublishedAt,
+        LocalDateTime appealDeadline,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {

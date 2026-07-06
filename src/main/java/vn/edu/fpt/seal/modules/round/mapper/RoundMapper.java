@@ -17,6 +17,8 @@ public final class RoundMapper {
                 .sequenceNumber(r.getSequenceNumber())
                 .submissionDeadline(r.getSubmissionDeadline())
                 .topNToPromote(r.getTopNToPromote())
+                .resultPublishedAt(r.getResultPublishedAt())
+                .appealDeadline(r.getAppealDeadline())
                 .createdAt(r.getCreatedAt())
                 .updatedAt(r.getUpdatedAt())
                 .build();
