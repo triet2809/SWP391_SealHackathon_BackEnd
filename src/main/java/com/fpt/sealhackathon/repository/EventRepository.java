@@ -8,24 +8,25 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.fpt.sealhackathon.entity.Event;
-import com.fpt.sealhackathon.entity.enums.EventStatus;
 
 public interface EventRepository extends JpaRepository<Event, UUID> {
 
-    @Query("""
-                SELECT e
-                FROM Event e
-                WHERE
-                    (
-                        COALESCE(:keyword, '') = ''
-                        OR LOWER(e.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                        OR LOWER(e.seasonName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                        OR LOWER(e.description) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                    )
-                    AND (:seasonYear IS NULL OR e.seasonYear = :seasonYear)
-                ORDER BY e.createdAt DESC
-            """)
+    @Query(value = """
+            SELECT *
+            FROM events e
+            WHERE
+            (
+                COALESCE(:keyword, '') = ''
+                OR LOWER(e.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                OR LOWER(e.season_name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                OR LOWER(e.description) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            )
+            AND (:seasonYear IS NULL OR e.season_year = :seasonYear)
+            AND (:status IS NULL OR e.status = CAST(:status AS event_status))
+            ORDER BY e.created_at DESC
+            """, nativeQuery = true)
     List<Event> eventFilter(
             @Param("keyword") String keyword,
-            @Param("seasonYear") Integer seasonYear);
+            @Param("seasonYear") Integer seasonYear,
+            @Param("status") String status);
 }
