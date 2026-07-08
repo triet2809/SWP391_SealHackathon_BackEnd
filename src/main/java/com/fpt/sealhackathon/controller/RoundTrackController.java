@@ -6,8 +6,8 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,68 +30,89 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RoundTrackController {
 
-    private final RoundTrackService roundTrackService;
+        private final RoundTrackService roundTrackService;
 
-    @GetMapping
-    @Operation(summary = "Get round track list", description = "Filter by round track and keyword")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
-    })
-    public ResponseEntity<ApiResponse<List<RoundTrackResponse>>> filter(
-            @RequestParam(required = false) UUID eventId,
-            @RequestParam(required = false) UUID roundId,
-            @RequestParam(required = false) String keyword) {
+        @GetMapping
+        @Operation(summary = "Get round track list", description = "Filter by round track and keyword")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<List<RoundTrackResponse>>> filter(
+                        @RequestParam(required = false) UUID eventId,
+                        @RequestParam(required = false) UUID roundId,
+                        @RequestParam(required = false) String keyword) {
 
-        return ResponseEntity.ok(ApiResponse.success(
-                "Get round tracks successfully",
-                roundTrackService.roundTrackFilter(
-                        eventId,
-                        roundId,
-                        keyword)));
-    }
+                return ResponseEntity.ok(ApiResponse.success(
+                                "Get round tracks successfully",
+                                roundTrackService.roundTrackFilter(
+                                                eventId,
+                                                roundId,
+                                                keyword)));
+        }
 
-    @PostMapping
-    @Operation(summary = "Create round track ", description = "Create round track")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
-    })
-    public ResponseEntity<ApiResponse<RoundTrackResponse>> create(
-            @RequestBody @Valid RoundTrackRequest request) {
+        @GetMapping("/{id}")
+        @Operation(summary = "Get round track", description = "Filter by track Id")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<RoundTrackResponse>> getTrackById(@PathVariable UUID id) {
 
-        return ResponseEntity.ok(ApiResponse.success(
-                "Create round track successfully",
-                roundTrackService.create(request)));
-    }
+                return ResponseEntity.ok(ApiResponse.success(
+                                "Get round track successfully",
+                                roundTrackService.roundTrackById(id)));
+        }
 
-    @PutMapping("/{id}")
-    @Operation(summary = "Updated round track ", description = "Updated round track ")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
-    })
-    public ResponseEntity<ApiResponse<RoundTrackResponse>> update(
-            @PathVariable UUID id,
-            @RequestBody @Valid RoundTrackRequest request) {
+        @PutMapping("/{id}")
+        @Operation(summary = "Updated round track ", description = "Updated round track ")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<RoundTrackResponse>> update(
+                        @PathVariable UUID id,
+                        @RequestBody @Valid RoundTrackRequest request) {
 
-        return ResponseEntity.ok(ApiResponse.success(
-                "Update round track successfully",
-                roundTrackService.update(id, request)));
-    }
+                return ResponseEntity.ok(ApiResponse.success(
+                                "Update round track successfully",
+                                roundTrackService.update(id, request)));
+        }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Delete round track ", description = "Delete round track ")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
-    })
-    public void delete(@PathVariable UUID id) {
+        @DeleteMapping("/{id}")
+        @Operation(summary = "Delete round track ", description = "Delete round track ")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
 
-        roundTrackService.delete(id);
-    }
+                roundTrackService.delete(id);
+
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Delete round track successfully",
+                                                null));
+        }
+
+        @PatchMapping("/{id}/promotion-rule")
+        @Operation(summary = "Update promotion rule", description = "Update the number of teams promoted to the next round")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<RoundTrackResponse>> updatePromoted(
+                        @PathVariable UUID id,
+                        @RequestParam Integer topNToPromote) {
+
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Update promotion rule successfully",
+                                                roundTrackService.updatePromotionRule(id, topNToPromote)));
+        }
 }

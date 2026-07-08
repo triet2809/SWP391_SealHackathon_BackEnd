@@ -2,12 +2,17 @@ package com.fpt.sealhackathon.dto.RoundTrack;
 
 import java.util.UUID;
 
+import org.hibernate.annotations.Comment;
+import org.hibernate.annotations.Comments;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,11 +21,13 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class RoundTrackRequest {
 
     @NotNull(message = "Event id must not be null")
     private UUID eventId;
 
+    @Schema(description = "Ignored in create request. The round ID is obtained from the path variable.")
     @NotNull(message = "Round id must not be null")
     private UUID roundId;
 

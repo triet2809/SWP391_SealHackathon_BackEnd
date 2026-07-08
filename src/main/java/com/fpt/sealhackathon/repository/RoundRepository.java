@@ -32,4 +32,15 @@ public interface RoundRepository extends JpaRepository<Round, UUID> {
     List<Round> roundFilter(
             @Param("eventId") UUID eventId,
             @Param("keyword") String keyword);
+
+    List<Round> findByEvent_Id(UUID id);
+
+    boolean existsByEvent_IdAndSequenceNumber(
+            UUID eventId,
+            Integer sequenceNumber);
+
+    boolean existsByEvent_IdAndSequenceNumberAndIdNot(
+            UUID eventId,
+            Integer sequenceNumber,
+            UUID roundId);
 }

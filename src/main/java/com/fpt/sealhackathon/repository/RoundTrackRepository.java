@@ -1,7 +1,6 @@
 package com.fpt.sealhackathon.repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -35,4 +34,6 @@ public interface RoundTrackRepository extends JpaRepository<RoundTrack, UUID> {
             @Param("eventId") UUID eventId,
             @Param("roundId") UUID roundId,
             @Param("keyword") String keyword);
+
+    List<RoundTrack> findByRound_Id(UUID roundId);
 }

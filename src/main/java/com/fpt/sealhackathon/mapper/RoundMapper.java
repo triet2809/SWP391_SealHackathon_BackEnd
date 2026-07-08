@@ -10,6 +10,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import com.fpt.sealhackathon.dto.round.RoundRequest;
 import com.fpt.sealhackathon.dto.round.RoundResponse;
+import com.fpt.sealhackathon.dto.round.RoundUpsertRequest;
 import com.fpt.sealhackathon.entity.Round;
 
 @Mapper(componentModel = "spring", uses = EventMapper.class)
@@ -31,6 +32,6 @@ public interface RoundMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     void updateEntityFromRequest(
-            RoundRequest request,
+            RoundUpsertRequest request,
             @MappingTarget Round round);
 }

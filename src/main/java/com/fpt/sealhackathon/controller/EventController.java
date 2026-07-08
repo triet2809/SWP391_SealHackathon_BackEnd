@@ -8,8 +8,11 @@ import com.fpt.sealhackathon.dto.common.ApiResponse;
 import com.fpt.sealhackathon.dto.event.EventRequest;
 import com.fpt.sealhackathon.dto.event.EventResponse;
 import com.fpt.sealhackathon.dto.event.EventStatusRequest;
+import com.fpt.sealhackathon.dto.round.RoundRequest;
+import com.fpt.sealhackathon.dto.round.RoundResponse;
 import com.fpt.sealhackathon.entity.enums.EventStatus;
 import com.fpt.sealhackathon.service.EventService;
+import com.fpt.sealhackathon.service.RoundService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,6 +28,7 @@ import java.util.UUID;
 public class EventController {
 
         private final EventService eventService;
+        private final RoundService roundService;
 
         @GetMapping
         @Operation(summary = "Get list events", description = "Filter events by keyword, status, seasonYear")
@@ -172,6 +176,36 @@ public class EventController {
                                 ApiResponse.success(
                                                 "Change status complete successfully",
                                                 eventService.changeStatus(id, EventStatus.completed)));
+        }
+
+        @GetMapping("/{id}/rounds")
+        @Operation(summary = "Get round list", description = "Filter round by event")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<List<RoundResponse>>> roundByEvent(@PathVariable UUID id) {
+
+                return ResponseEntity.ok(ApiResponse.success(
+                                "Get rounds by event successfully",
+                                roundService.roundByEventId(id)));
+        }
+
+        @PostMapping("/{id}/rounds")
+        @Operation(summary = "Create round", description = "Create new round")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<RoundResponse>> create(
+                        @PathVariable UUID id,
+                        @RequestBody @Valid RoundRequest request) {
+
+                return ResponseEntity.ok(ApiResponse.success(
+                                "Create round successfully",
+                                roundService.create(id, request)));
         }
 
 }
