@@ -2,8 +2,6 @@ package com.fpt.sealhackathon.dto.event;
 
 import java.time.LocalDateTime;
 
-import com.fpt.sealhackathon.entity.enums.EventStatus;
-
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -33,8 +31,6 @@ public class EventRequest {
     private Integer seasonYear;
 
     private String description;
-
-    private EventStatus status;
 
     private LocalDateTime registrationStartAt;
 

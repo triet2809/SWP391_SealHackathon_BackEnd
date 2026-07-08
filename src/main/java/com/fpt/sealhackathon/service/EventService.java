@@ -13,9 +13,9 @@ public interface EventService {
 
     EventResponse update(UUID id, EventRequest request);
 
-    void delete(UUID id);
-
-    List<EventResponse> eventFilter(String keyword, Integer seasonYear);
+    List<EventResponse> eventFilter(String keyword, Integer seasonYear, EventStatus status);
 
     EventResponse changeStatus(UUID id, EventStatus status);
+
+    EventResponse eventById(UUID id);
 }
