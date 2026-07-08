@@ -28,4 +28,8 @@ public interface CampusRepository extends JpaRepository<Campus, UUID> {
             @Param("universityId") UUID universityId,
             @Param("keyword") String keyword);
 
+    List<Campus> findByUniversity_Id(UUID universityId);
+
+    boolean existsByUniversity_Id(UUID universityId);
+
 }

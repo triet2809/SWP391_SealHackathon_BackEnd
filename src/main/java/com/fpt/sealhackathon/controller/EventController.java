@@ -8,8 +8,11 @@ import com.fpt.sealhackathon.dto.common.ApiResponse;
 import com.fpt.sealhackathon.dto.event.EventRequest;
 import com.fpt.sealhackathon.dto.event.EventResponse;
 import com.fpt.sealhackathon.dto.event.EventStatusRequest;
+import com.fpt.sealhackathon.dto.round.RoundRequest;
+import com.fpt.sealhackathon.dto.round.RoundResponse;
 import com.fpt.sealhackathon.entity.enums.EventStatus;
 import com.fpt.sealhackathon.service.EventService;
+import com.fpt.sealhackathon.service.RoundService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,82 +27,185 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EventController {
 
-    private final EventService eventService;
+        private final EventService eventService;
+        private final RoundService roundService;
 
-    @GetMapping
-    @Operation(summary = "Get list events", description = "Filter events by keyword, status, seasonYear")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
-    })
-    public ResponseEntity<ApiResponse<List<EventResponse>>> eventFilter(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) Integer seasonYear) {
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        "Get events successfully",
-                        eventService.eventFilter(keyword, seasonYear)));
-    }
+        @GetMapping
+        @Operation(summary = "Get list events", description = "Filter events by keyword, status, seasonYear")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<List<EventResponse>>> eventFilter(
+                        @RequestParam(required = false) String keyword,
+                        @RequestParam(required = false) Integer seasonYear,
+                        @RequestParam(required = false) EventStatus status) {
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Get events successfully",
+                                                eventService.eventFilter(keyword, seasonYear, status)));
+        }
 
-    @PostMapping
-    @Operation(summary = "Create event", description = "Create new event")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
-    })
-    public ResponseEntity<ApiResponse<EventResponse>> create(
-            @RequestBody @Valid EventRequest request) {
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        "Create event successfully",
-                        eventService.create(request)));
-    }
+        @GetMapping("/{id}")
+        @Operation(summary = "Get event", description = "Filter event by id")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<EventResponse>> eventById(@PathVariable UUID id) {
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Get event successfully",
+                                                eventService.eventById(id)));
+        }
 
-    @PutMapping("/{id}")
-    @Operation(summary = "Update event", description = "Update event by id")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
-    })
-    public ResponseEntity<ApiResponse<EventResponse>> update(
-            @PathVariable UUID id,
-            @RequestBody @Valid EventRequest request) {
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        "Update event successfully",
-                        eventService.update(id, request)));
-    }
+        @PostMapping
+        @Operation(summary = "Create event", description = "Create new event")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<EventResponse>> create(
+                        @RequestBody @Valid EventRequest request) {
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Create event successfully",
+                                                eventService.create(request)));
+        }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Delete event", description = "Delete event by id")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
-    })
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
-        eventService.delete(id);
-        return ResponseEntity.ok(
-                ApiResponse.success("Delete event successfully", null));
-    }
+        @PutMapping("/{id}")
+        @Operation(summary = "Update event", description = "Update event by id")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<EventResponse>> update(
+                        @PathVariable UUID id,
+                        @RequestBody @Valid EventRequest request) {
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Update event successfully",
+                                                eventService.update(id, request)));
+        }
 
-    @PatchMapping("/{id}/status")
-    @Operation(summary = "Change event status", description = "Update only event status")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
-    })
-    public ResponseEntity<ApiResponse<EventResponse>> changeStatus(
-            @PathVariable UUID id,
-            @RequestBody @Valid EventStatusRequest request) {
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        "Change status successfully",
-                        eventService.changeStatus(id, request.getStatus())));
-    }
+        @PatchMapping("/{id}")
+        @Operation(summary = "Change event status", description = "Update only event status")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<EventResponse>> changeStatus(
+                        @PathVariable UUID id,
+                        @RequestBody @Valid EventStatusRequest request) {
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Change status successfully",
+                                                eventService.changeStatus(id, request.getStatus())));
+        }
+
+        @PatchMapping("/{id}/publish")
+        @Operation(summary = "Change event status published", description = "Change event status published")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<EventResponse>> changePublish(@PathVariable UUID id) {
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Change status published successfully",
+                                                eventService.changeStatus(id, EventStatus.published)));
+        }
+
+        @PatchMapping("/{id}/open-registration")
+        @Operation(summary = "Change event status open registration", description = "Change event status open registration")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<EventResponse>> changeOpenRegistration(@PathVariable UUID id) {
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Change status open registration successfully",
+                                                eventService.changeStatus(id, EventStatus.registration_open)));
+        }
+
+        @PatchMapping("/{id}/close-registration")
+        @Operation(summary = "Change event status close registration", description = "Change event status close registration")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<EventResponse>> changeCloseRegistration(@PathVariable UUID id) {
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Change status close registration successfully",
+                                                eventService.changeStatus(id, EventStatus.registration_closed)));
+        }
+
+        @PatchMapping("/{id}/start")
+        @Operation(summary = "Change event status start", description = "Change event status start")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<EventResponse>> changeStart(@PathVariable UUID id) {
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Change status start successfully",
+                                                eventService.changeStatus(id, EventStatus.ongoing)));
+        }
+
+        @PatchMapping("/{id}/complete")
+        @Operation(summary = "Change event status complete", description = "Change event status complete")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<EventResponse>> changeComplete(@PathVariable UUID id) {
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Change status complete successfully",
+                                                eventService.changeStatus(id, EventStatus.completed)));
+        }
+
+        @GetMapping("/{id}/rounds")
+        @Operation(summary = "Get round list", description = "Filter round by event")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<List<RoundResponse>>> roundByEvent(@PathVariable UUID id) {
+
+                return ResponseEntity.ok(ApiResponse.success(
+                                "Get rounds by event successfully",
+                                roundService.roundByEventId(id)));
+        }
+
+        @PostMapping("/{id}/rounds")
+        @Operation(summary = "Create round", description = "Create new round")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lay danh sach thanh cong"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Chua xac thuc", content = @Content),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Khong co quyen coordinator", content = @Content)
+        })
+        public ResponseEntity<ApiResponse<RoundResponse>> create(
+                        @PathVariable UUID id,
+                        @RequestBody @Valid RoundRequest request) {
+
+                return ResponseEntity.ok(ApiResponse.success(
+                                "Create round successfully",
+                                roundService.create(id, request)));
+        }
 
 }

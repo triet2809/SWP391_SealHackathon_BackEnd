@@ -11,7 +11,7 @@ import com.fpt.sealhackathon.dto.RoundTrack.RoundTrackResponse;
 @Service
 public interface RoundTrackService {
 
-    RoundTrackResponse create(RoundTrackRequest request);
+    RoundTrackResponse create(UUID id, RoundTrackRequest request);
 
     RoundTrackResponse update(UUID id, RoundTrackRequest request);
 
@@ -21,4 +21,10 @@ public interface RoundTrackService {
             UUID eventId,
             UUID roundId,
             String keyword);
+
+    List<RoundTrackResponse> roundTrackByTrack(UUID roundId);
+
+    RoundTrackResponse roundTrackById(UUID id);
+
+    RoundTrackResponse updatePromotionRule(UUID id, Integer topNToPromote);
 }

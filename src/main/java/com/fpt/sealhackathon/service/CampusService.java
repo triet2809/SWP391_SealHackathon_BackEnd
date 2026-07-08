@@ -12,12 +12,14 @@ import com.fpt.sealhackathon.dto.campus.CampusResponse;
 @Service
 public interface CampusService {
 
-    CampusResponse create(CampusRequest request);
+    CampusResponse create(UUID id, CampusRequest request);
 
     CampusResponse update(UUID id, CampusRequest request);
 
     void delete(UUID id) throws BadRequestException;
 
     List<CampusResponse> campusFilter(UUID universityId, String keyword);
+
+    List<CampusResponse> campusByUniversity(UUID universityId);
 
 }

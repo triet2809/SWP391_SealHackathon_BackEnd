@@ -26,10 +26,10 @@ public class CampusServiceImpl implements CampusService {
     private final CampusMapper campusMapper;
 
     @Override
-    public CampusResponse create(CampusRequest request) {
+    public CampusResponse create(UUID id, CampusRequest request) {
         Campus campus = campusMapper.toEntity(request);
 
-        University university = universityRepository.findById(request.getUniversityId())
+        University university = universityRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("University not found"));
 
         campus.setUniversity(university);
@@ -58,13 +58,23 @@ public class CampusServiceImpl implements CampusService {
 
     @Override
     public void delete(UUID id) {
-        campusRepository.deleteById(id);
+        Campus campus = campusRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Campus not found"));
+
+        campusRepository.delete(campus);
     }
 
     @Override
     public List<CampusResponse> campusFilter(UUID universityId, String keyword) {
 
         List<Campus> campuses = campusRepository.campusFilter(universityId, keyword);
+
+        return campusMapper.toResponseList(campuses);
+    }
+
+    @Override
+    public List<CampusResponse> campusByUniversity(UUID universityId) {
+        List<Campus> campuses = campusRepository.findByUniversity_Id(universityId);
 
         return campusMapper.toResponseList(campuses);
     }
