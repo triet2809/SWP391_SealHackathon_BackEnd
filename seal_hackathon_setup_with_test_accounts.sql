@@ -43,6 +43,22 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+-- ============================================================================
+-- RESET SCHEMA (makes this file fully re-runnable / idempotent)
+-- ----------------------------------------------------------------------------
+-- WARNING: this DROPS everything in schema "public" (all tables + data) and
+-- rebuilds from scratch. Intended for demo / test / local databases.
+-- DO NOT run this file on a database that holds real data you want to keep.
+--
+-- Why: GUI query tools (pgAdmin/DBeaver) run the whole script in ONE
+-- transaction. The dump uses CREATE TYPE (no IF NOT EXISTS); on a database
+-- that already has these objects it errors with "type ... already exists",
+-- which aborts the transaction and every later statement fails with 25P02.
+-- Resetting the schema first avoids that and works on empty or existing DBs.
+-- ============================================================================
+DROP SCHEMA IF EXISTS public CASCADE;
+CREATE SCHEMA public;
+
 --
 -- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
 --
