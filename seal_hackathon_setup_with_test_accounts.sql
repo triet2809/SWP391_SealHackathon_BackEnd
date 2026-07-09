@@ -84,7 +84,6 @@ CREATE TYPE public.account_status AS ENUM (
 );
 
 
-ALTER TYPE public.account_status OWNER TO postgres;
 
 --
 -- Name: audit_action; Type: TYPE; Schema: public; Owner: postgres
@@ -109,7 +108,6 @@ CREATE TYPE public.audit_action AS ENUM (
 );
 
 
-ALTER TYPE public.audit_action OWNER TO postgres;
 
 --
 -- Name: event_status; Type: TYPE; Schema: public; Owner: postgres
@@ -124,7 +122,6 @@ CREATE TYPE public.event_status AS ENUM (
 );
 
 
-ALTER TYPE public.event_status OWNER TO postgres;
 
 --
 -- Name: incident_action_type; Type: TYPE; Schema: public; Owner: postgres
@@ -140,7 +137,6 @@ CREATE TYPE public.incident_action_type AS ENUM (
 );
 
 
-ALTER TYPE public.incident_action_type OWNER TO postgres;
 
 --
 -- Name: incident_status; Type: TYPE; Schema: public; Owner: postgres
@@ -154,7 +150,6 @@ CREATE TYPE public.incident_status AS ENUM (
 );
 
 
-ALTER TYPE public.incident_status OWNER TO postgres;
 
 --
 -- Name: incident_type; Type: TYPE; Schema: public; Owner: postgres
@@ -170,7 +165,6 @@ CREATE TYPE public.incident_type AS ENUM (
 );
 
 
-ALTER TYPE public.incident_type OWNER TO postgres;
 
 --
 -- Name: promotion_status; Type: TYPE; Schema: public; Owner: postgres
@@ -184,7 +178,6 @@ CREATE TYPE public.promotion_status AS ENUM (
 );
 
 
-ALTER TYPE public.promotion_status OWNER TO postgres;
 
 --
 -- Name: round_participant_status; Type: TYPE; Schema: public; Owner: postgres
@@ -199,7 +192,6 @@ CREATE TYPE public.round_participant_status AS ENUM (
 );
 
 
-ALTER TYPE public.round_participant_status OWNER TO postgres;
 
 --
 -- Name: student_type; Type: TYPE; Schema: public; Owner: postgres
@@ -212,7 +204,6 @@ CREATE TYPE public.student_type AS ENUM (
 );
 
 
-ALTER TYPE public.student_type OWNER TO postgres;
 
 --
 -- Name: team_member_role; Type: TYPE; Schema: public; Owner: postgres
@@ -224,7 +215,6 @@ CREATE TYPE public.team_member_role AS ENUM (
 );
 
 
-ALTER TYPE public.team_member_role OWNER TO postgres;
 
 --
 -- Name: team_status; Type: TYPE; Schema: public; Owner: postgres
@@ -236,7 +226,6 @@ CREATE TYPE public.team_status AS ENUM (
 );
 
 
-ALTER TYPE public.team_status OWNER TO postgres;
 
 --
 -- Name: update_updated_at_column(); Type: FUNCTION; Schema: public; Owner: postgres
@@ -252,7 +241,6 @@ END;
 $$;
 
 
-ALTER FUNCTION public.update_updated_at_column() OWNER TO postgres;
 
 SET default_tablespace = '';
 
@@ -277,7 +265,6 @@ CREATE TABLE public.audit_logs (
 );
 
 
-ALTER TABLE public.audit_logs OWNER TO postgres;
 
 --
 -- Name: campuses; Type: TABLE; Schema: public; Owner: postgres
@@ -294,7 +281,6 @@ CREATE TABLE public.campuses (
 );
 
 
-ALTER TABLE public.campuses OWNER TO postgres;
 
 --
 -- Name: criteria_templates; Type: TABLE; Schema: public; Owner: postgres
@@ -311,7 +297,6 @@ CREATE TABLE public.criteria_templates (
 );
 
 
-ALTER TABLE public.criteria_templates OWNER TO postgres;
 
 --
 -- Name: events; Type: TABLE; Schema: public; Owner: postgres
@@ -333,7 +318,6 @@ CREATE TABLE public.events (
 );
 
 
-ALTER TABLE public.events OWNER TO postgres;
 
 --
 -- Name: incident_actions; Type: TABLE; Schema: public; Owner: postgres
@@ -353,7 +337,6 @@ CREATE TABLE public.incident_actions (
 );
 
 
-ALTER TABLE public.incident_actions OWNER TO postgres;
 
 --
 -- Name: incident_evidences; Type: TABLE; Schema: public; Owner: postgres
@@ -370,7 +353,6 @@ CREATE TABLE public.incident_evidences (
 );
 
 
-ALTER TABLE public.incident_evidences OWNER TO postgres;
 
 --
 -- Name: incident_reports; Type: TABLE; Schema: public; Owner: postgres
@@ -397,7 +379,6 @@ CREATE TABLE public.incident_reports (
 );
 
 
-ALTER TABLE public.incident_reports OWNER TO postgres;
 
 --
 -- Name: mentor_feedbacks; Type: TABLE; Schema: public; Owner: postgres
@@ -414,7 +395,6 @@ CREATE TABLE public.mentor_feedbacks (
 );
 
 
-ALTER TABLE public.mentor_feedbacks OWNER TO postgres;
 
 --
 -- Name: notices; Type: TABLE; Schema: public; Owner: postgres
@@ -435,7 +415,6 @@ CREATE TABLE public.notices (
 );
 
 
-ALTER TABLE public.notices OWNER TO postgres;
 
 --
 -- Name: notifications; Type: TABLE; Schema: public; Owner: mac
@@ -456,7 +435,6 @@ CREATE TABLE public.notifications (
 );
 
 
-ALTER TABLE public.notifications OWNER TO mac;
 
 --
 -- Name: prizes; Type: TABLE; Schema: public; Owner: postgres
@@ -476,7 +454,6 @@ CREATE TABLE public.prizes (
 );
 
 
-ALTER TABLE public.prizes OWNER TO postgres;
 
 --
 -- Name: revoked_tokens; Type: TABLE; Schema: public; Owner: postgres
@@ -491,7 +468,6 @@ CREATE TABLE public.revoked_tokens (
 );
 
 
-ALTER TABLE public.revoked_tokens OWNER TO postgres;
 
 --
 -- Name: roles; Type: TABLE; Schema: public; Owner: postgres
@@ -504,7 +480,6 @@ CREATE TABLE public.roles (
 );
 
 
-ALTER TABLE public.roles OWNER TO postgres;
 
 --
 -- Name: round_criteria; Type: TABLE; Schema: public; Owner: postgres
@@ -524,7 +499,6 @@ CREATE TABLE public.round_criteria (
 );
 
 
-ALTER TABLE public.round_criteria OWNER TO postgres;
 
 --
 -- Name: round_judges; Type: TABLE; Schema: public; Owner: postgres
@@ -538,7 +512,6 @@ CREATE TABLE public.round_judges (
 );
 
 
-ALTER TABLE public.round_judges OWNER TO postgres;
 
 --
 -- Name: round_participants; Type: TABLE; Schema: public; Owner: postgres
@@ -555,7 +528,6 @@ CREATE TABLE public.round_participants (
 );
 
 
-ALTER TABLE public.round_participants OWNER TO postgres;
 
 --
 -- Name: round_rankings; Type: TABLE; Schema: public; Owner: postgres
@@ -577,7 +549,6 @@ CREATE TABLE public.round_rankings (
 );
 
 
-ALTER TABLE public.round_rankings OWNER TO postgres;
 
 --
 -- Name: rounds; Type: TABLE; Schema: public; Owner: postgres
@@ -597,7 +568,6 @@ CREATE TABLE public.rounds (
 );
 
 
-ALTER TABLE public.rounds OWNER TO postgres;
 
 --
 -- Name: scores; Type: TABLE; Schema: public; Owner: postgres
@@ -620,7 +590,6 @@ CREATE TABLE public.scores (
 );
 
 
-ALTER TABLE public.scores OWNER TO postgres;
 
 --
 -- Name: submissions; Type: TABLE; Schema: public; Owner: postgres
@@ -643,7 +612,6 @@ CREATE TABLE public.submissions (
 );
 
 
-ALTER TABLE public.submissions OWNER TO postgres;
 
 --
 -- Name: support_tickets; Type: TABLE; Schema: public; Owner: postgres
@@ -662,7 +630,6 @@ CREATE TABLE public.support_tickets (
 );
 
 
-ALTER TABLE public.support_tickets OWNER TO postgres;
 
 --
 -- Name: team_chat_messages; Type: TABLE; Schema: public; Owner: postgres
@@ -678,7 +645,6 @@ CREATE TABLE public.team_chat_messages (
 );
 
 
-ALTER TABLE public.team_chat_messages OWNER TO postgres;
 
 --
 -- Name: team_join_requests; Type: TABLE; Schema: public; Owner: postgres
@@ -696,7 +662,6 @@ CREATE TABLE public.team_join_requests (
 );
 
 
-ALTER TABLE public.team_join_requests OWNER TO postgres;
 
 --
 -- Name: team_members; Type: TABLE; Schema: public; Owner: postgres
@@ -711,7 +676,6 @@ CREATE TABLE public.team_members (
 );
 
 
-ALTER TABLE public.team_members OWNER TO postgres;
 
 --
 -- Name: teams; Type: TABLE; Schema: public; Owner: postgres
@@ -729,7 +693,6 @@ CREATE TABLE public.teams (
 );
 
 
-ALTER TABLE public.teams OWNER TO postgres;
 
 --
 -- Name: track_judges; Type: TABLE; Schema: public; Owner: postgres
@@ -744,7 +707,6 @@ CREATE TABLE public.track_judges (
 );
 
 
-ALTER TABLE public.track_judges OWNER TO postgres;
 
 --
 -- Name: track_mentors; Type: TABLE; Schema: public; Owner: postgres
@@ -759,7 +721,6 @@ CREATE TABLE public.track_mentors (
 );
 
 
-ALTER TABLE public.track_mentors OWNER TO postgres;
 
 --
 -- Name: tracks; Type: TABLE; Schema: public; Owner: postgres
@@ -776,7 +737,6 @@ CREATE TABLE public.tracks (
 );
 
 
-ALTER TABLE public.tracks OWNER TO postgres;
 
 --
 -- Name: universities; Type: TABLE; Schema: public; Owner: postgres
@@ -792,7 +752,6 @@ CREATE TABLE public.universities (
 );
 
 
-ALTER TABLE public.universities OWNER TO postgres;
 
 --
 -- Name: user_roles; Type: TABLE; Schema: public; Owner: postgres
@@ -805,7 +764,6 @@ CREATE TABLE public.user_roles (
 );
 
 
-ALTER TABLE public.user_roles OWNER TO postgres;
 
 --
 -- Name: users; Type: TABLE; Schema: public; Owner: postgres
@@ -833,7 +791,6 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO postgres;
 
 --
 -- Name: view_judge_submissions; Type: VIEW; Schema: public; Owner: postgres
@@ -854,7 +811,6 @@ CREATE VIEW public.view_judge_submissions AS
      JOIN public.teams team ON ((team.id = s.team_id)));
 
 
-ALTER VIEW public.view_judge_submissions OWNER TO postgres;
 
 --
 -- Name: view_mentor_teams; Type: VIEW; Schema: public; Owner: postgres
@@ -876,7 +832,6 @@ CREATE VIEW public.view_mentor_teams AS
      LEFT JOIN public.teams team ON ((team.track_id = t.id)));
 
 
-ALTER VIEW public.view_mentor_teams OWNER TO postgres;
 
 --
 -- Data for Name: audit_logs; Type: TABLE DATA; Schema: public; Owner: postgres
